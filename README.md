@@ -12,3 +12,9 @@ You are free to link or use LErNet inside source code of your own program. If do
 [License](https://raw.githubusercontent.com/InfOmics/LErNet/master/LICENSE)
 
 <hr />
+
+## Citation
+If you have used any of the PanDelos project software, please cite the following paper:
+
+     Bonnici V., Caligola S., Fiorini G., Giugice L., Giugno R.
+     LErNet: characterization of lncRNAs via context-aware network expansion and enrichment analysis.
