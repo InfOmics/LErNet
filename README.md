@@ -8,7 +8,7 @@ LErNet: characterization of lncRNAs via context-aware network expansion and enri
 
 ## License
 LErNet is distributed under the MIT license. This means that it is free for both academic and commercial use. Note however that some third party components in LErNet require that you reference certain works in scientific publications.
-You are free to link or use LErNet inside source code of your own program. If do so, please reference (cite) PanDelos and this website. We appreciate bug fixes and would be happy to collaborate for improvements. 
+You are free to link or use LErNet inside source code of your own program. If do so, please reference (cite) LErNet and this website. We appreciate bug fixes and would be happy to collaborate for improvements. 
 [License](https://raw.githubusercontent.com/InfOmics/LErNet/master/LICENSE)
 
 <hr />
