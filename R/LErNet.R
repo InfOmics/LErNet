@@ -218,9 +218,9 @@ get_genomic_context <- function(
 #' by the expasion algorithm.
 #' Connectors are neighbors of selected proteins in the input PPI network.
 #'
-#' @param genomic_context a two column data.fram produced by \code{\link[LErNet]{LErNet.get_genomic_context}}
-#' @param ppi_network a two column data.frame representing PPI network edges (see also \code{\link[LErNet]{LErNet.get_stringdb}} )
-#' @param ensp_to_ensg a two column data.frame for mapping proteins to their producer genes (see also \code{\link[LErNet]{LErNet.get_stringdb}} )
+#' @param genomic_context a two column data.fram produced by \code{\link[LErNet]{get_genomic_context}}
+#' @param ppi_network a two column data.frame representing PPI network edges (see also \code{\link[LErNet]{get_stringdb}} )
+#' @param ensp_to_ensg a two column data.frame for mapping proteins to their producer genes (see also \code{\link[LErNet]{get_stringdb}} )
 #' @param strict_proteins a list of proteins
 #' @param strict_connectors if \code{TRUE} connectors can onyl be choosen from the \code{strict_proteins} list
 #'
@@ -468,9 +468,9 @@ expand_seeds <- function(
 #'
 #'
 #' @param lncgenes a list of lncRNA genes
-#' @param genomic_context the genomc context of the lncRNAs (see \code{\link[LErNet]{LErNet.get_genomic_context}})
-#' @param ppi_network a two column data.frame representing PPI network edges (see also \code{\link[LErNet]{LErNet.get_stringdb}} )
-#' @param ensp_to_ensg a two column data.frame for mapping proteins to their producer genes (see also \code{\link[LErNet]{LErNet.get_stringdb}} )
+#' @param genomic_context the genomc context of the lncRNAs (see \code{\link[LErNet]{get_genomic_context}})
+#' @param ppi_network a two column data.frame representing PPI network edges (see also \code{\link[LErNet]{get_stringdb}} )
+#' @param ensp_to_ensg a two column data.frame for mapping proteins to their producer genes (see also \code{\link[LErNet]{get_stringdb}} )
 #' @param input_proteins the complete list of input proteins,that are of interest for the study
 #' @param network_seeds the lsit of seed protieins
 #' @param expanded_elements the list of proteins that must be visualized

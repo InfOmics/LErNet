@@ -8,11 +8,11 @@ expand_seeds(genomic_context, ppi_network, ensp_to_ensg, strict_proteins,
   strict_connectors = TRUE)
 }
 \arguments{
-\item{genomic_context}{a two column data.fram produced by \code{\link[LErNet]{LErNet.get_genomic_context}}}
+\item{genomic_context}{a two column data.fram produced by \code{\link[LErNet]{get_genomic_context}}}
 
-\item{ppi_network}{a two column data.frame representing PPI network edges (see also \code{\link[LErNet]{LErNet.get_stringdb}} )}
+\item{ppi_network}{a two column data.frame representing PPI network edges (see also \code{\link[LErNet]{get_stringdb}} )}
 
-\item{ensp_to_ensg}{a two column data.frame for mapping proteins to their producer genes (see also \code{\link[LErNet]{LErNet.get_stringdb}} )}
+\item{ensp_to_ensg}{a two column data.frame for mapping proteins to their producer genes (see also \code{\link[LErNet]{get_stringdb}} )}
 
 \item{strict_proteins}{a list of proteins}
 

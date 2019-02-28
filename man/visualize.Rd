@@ -11,15 +11,15 @@ visualize(lncgenes, genomic_context, ensp_to_ensg, input_proteins,
 \arguments{
 \item{lncgenes}{a list of lncRNA genes}
 
-\item{genomic_context}{the genomc context of the lncRNAs (see \code{\link[LErNet]{LErNet.get_genomic_context}})}
+\item{genomic_context}{the genomc context of the lncRNAs (see \code{\link[LErNet]{get_genomic_context}})}
 
-\item{ensp_to_ensg}{a two column data.frame for mapping proteins to their producer genes (see also \code{\link[LErNet]{LErNet.get_stringdb}} )}
+\item{ensp_to_ensg}{a two column data.frame for mapping proteins to their producer genes (see also \code{\link[LErNet]{get_stringdb}} )}
 
 \item{input_proteins}{the complete list of input proteins,that are of interest for the study}
 
 \item{network_seeds}{the lsit of seed protieins}
 
-\item{ppi_network}{a two column data.frame representing PPI network edges (see also \code{\link[LErNet]{LErNet.get_stringdb}} )}
+\item{ppi_network}{a two column data.frame representing PPI network edges (see also \code{\link[LErNet]{get_stringdb}} )}
 
 \item{expanded_elements}{the list of proteins that must be visualized}
 
