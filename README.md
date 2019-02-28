@@ -65,7 +65,7 @@ lncrnaInfo<-lncrnaInfo[1:last-1,]
 lncrnaAll<-as.character(lncrnaInfo$gene_id)
 # <- list of strict lncgenes
 
-complete_positions <- LErNet.load_gtf(gtf_file)
+complete_positions <- LErNet::load_gtf(gtf_file)
 
 # mi ricavo i novel per ottenere le loro coordinate sul gtf
 novel<-lncrnaInfo
@@ -89,13 +89,13 @@ rownames(complete_positions) <- seq(1:nrow(complete_positions))
 mart = useMart(biomart = "ensembl", dataset = "mmusculus_gene_ensembl")
 stringdb_tax = 10090
 stringdb_thr = 900
-ret <- LErNet.get_stringdb( stringdb_tax = stringdb_tax, stringdb_thr = stringdb_thr, mart = mart)
+ret <- LErNet::get_stringdb( stringdb_tax = stringdb_tax, stringdb_thr = stringdb_thr, mart = mart)
 
 ppi_network <- ret[["ppi_network"]]
 ensp_to_ensg <- ret[["ensp_to_ensg"]]
 
 
-genomic_context <- LErNet.get_genomic_context(positions = complete_positions, lncgenes = lncrnaAll, pcgenes = pcgenes, max_window = 100000, strict_genomics = TRUE)
+genomic_context <- LErNet::get_genomic_context(positions = complete_positions, lncgenes = lncrnaAll, pcgenes = pcgenes, max_window = 100000, strict_genomics = TRUE)
 
 # Number of genomic seeds
 length(unique(genomic_context$partner_coding_gene))
@@ -109,7 +109,7 @@ strict_proteins<-annot$ensembl_peptide_id
 empty<-which(strict_proteins == "")
 strict_proteins<-strict_proteins[-empty]
 
-ret <- LErNet.expand(
+ret <- LErNet::expand_seeds(
                 genomic_context = genomic_context,
                 ppi_network = ppi_network,
                 ensp_to_ensg = ensp_to_ensg,
@@ -120,7 +120,7 @@ network_components <- ret[["network_components"]]
 input_proteins <- ret[["input_proteins"]]
 network_seeds <- ret[["network_seeds"]]
 
-LErNet.visualize(
+LErNet::visualize(
   lncgenes = lncrnaAll,
   genomic_context = genomic_context,
   ensp_to_ensg = ensp_to_ensg,
@@ -132,6 +132,6 @@ LErNet.visualize(
   mart_symbol_column = "mgi_symbol"  # "hgnc_symbol" for human
 )
 
-enrichment <- LErNet.enrich(  ens_proteins = unlist(network_components),  organism = "mouse",  mart = mart)
-#LErNet.enrich(  ens_proteins = unlist(network_components),  organism = "mouse",  mart = mart, max_to_show =2)
+enrichment <- LErNet::enrich(  ens_proteins = unlist(network_components),  organism = "mouse",  mart = mart)
+#LErNet::enrich(  ens_proteins = unlist(network_components),  organism = "mouse",  mart = mart, max_to_show =2)
 ```
