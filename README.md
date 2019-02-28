@@ -97,12 +97,13 @@ stringdb_tax = 10090
 stringdb_thr = 900
 ```
 
-After the function "get_stringdb" must be executed to map ENSEMBL protein ids into ENSEMBL gene ids:
+After, the function "get_stringdb" must be executed to map ENSEMBL protein ids into ENSEMBL gene ids. To perform the mapping phase a connection to BioMart is needed.
 
 ```
 ret <- LErNet::get_stringdb( stringdb_tax = stringdb_tax, stringdb_thr = stringdb_thr, mart = mart)
 ```
 
+The function "get_stringdb" returns a list with 2 dataframe, one containin the PPI network and the second with the mapping table of ENSEMBL ids.
 
 ```
 ppi_network <- ret[["ppi_network"]]
