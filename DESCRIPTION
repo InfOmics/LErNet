@@ -4,7 +4,7 @@ Title: LErNet: characterization of lncRNAs via context-aware network expansion a
 Version: 0.1.0
 Author: Vincenzo Bonnici, Simone Caligola, Giulia Fiorini, Luca Giudice, Rosalba Giugno
 Maintainer: Vincenzo Bonnici <vincenzo.bonnici@univr.it>
-Description:Long non-coding RNAs (lncRNA) have recently acquired a boost of interest 
+Description: Long non-coding RNAs (lncRNA) have recently acquired a boost of interest 
     for their implication in several biological conditions. 
     However, many of these elements are not yet annotate. 
     LErNet is focused on a new network analysis method for 
@@ -30,3 +30,4 @@ Imports:
 Suggests:
     R.utils,
     xlsx
+RoxygenNote: 6.1.1

@@ -3,33 +3,26 @@
 #if (!require(igraph)) install.packages('igraph')
 #library(igraph)
 
-# Hello, world!
-#
-# This is an example function named 'hello'
-# which prints 'Hello, world!'.
-#
-# You can learn more about package authoring with RStudio at:
-#
-#   http://r-pkgs.had.co.nz/
-#
-# Some useful keyboard shortcuts for package authoring:
-#
-#   Build and Reload Package:  'Ctrl + Shift + B'
-#   Check Package:             'Ctrl + Shift + E'
-#   Test Package:              'Ctrl + Shift + T'
 
-hello <- function() {
-  print("Hello, world!")
-}
-
-
-
-LErNet.load_gtf <- function(
+#' Creation of a choordinates data.frame from a GTF file
+#'
+#' Creates the choordinates data.frame by reading the data from a GTF file
+#' having 9 columns (whihc is the typical format of GTF files from GENCODE).
+#'
+#' @param gtf_file the path tot he GTF file
+#'
+#' @return a data.frame with columns: \code{id type seqname start end}
+#'
+#' @examples
+#' library(LErNet)
+#' gtf_file <- system.file("extdata", "gencode.vM20.chr_patch_hapl_scaff.annotation.gtf.gz", package = "LErNet")
+#' complete_positions <- LErNet.load_gtf(gtf_file)
+#'
+#' @export
+load_gtf <- function(
   gtf_file
 )
 {
- # return complete_positions,	# dataframe  ENSG type[pc,lnc] chr strand start end # contains also non DE elements
-
   gtf<-read.table(gtf_file, header = FALSE, sep = "\t")
   colnames(gtf)<-c("seqname","source","feature","start","end","score","strand","frame","attribute")
   gtf[,c(1,2,3,6,7,8,9)]<-lapply(gtf[,c(1,2,3,6,7,8,9)], as.character)
@@ -56,8 +49,34 @@ LErNet.load_gtf <- function(
 }
 
 
-
-LErNet.get_stringdb <- function(
+#' Retrieving of infomraiton fron the STRING database
+#'
+#' Retrieves the PPI network formt he STRING database via the STRINGdb.
+#' STRINGdb often onyl associates a primary product to a gene,
+#' thus other products are not reported.
+#' The function also returns the proteins associated to each gene within the STRING database.
+#'
+#' @param stringdb_tax taxa of the species
+#' @param stringdb_thr threshold to be applied to the score on the edges of the PPI
+#' @param mart a biomaRt object for mapping proteins to producer genes (Ensembl IDs).
+#'
+#' @return a list
+#' \describe{
+#'   \item{\code{ppi_network}}{a two columns data.frame representing the PPI network by listing its edges.}
+#'   \item{\code{ensp_to_ensg}}{a two columns data.frame reporting for each protein the corresponding gene (Ensembl IDs)}
+#' }
+#'
+#' @examples
+#' library(biomaRt)
+#' stringdb_tax = 9606
+#' stringdb_thr = 900
+#' mart = useMart(biomart = "ensembl", dataset = "hsapiens_gene_ensembl")
+#' ret <- LErNet.get_stringdb( stringdb_tax = stringdb_tax, stringdb_thr = stringdb_thr, mart = mart)
+#' ppi_network <- ret[["ppi_network"]]
+#' ensp_to_ensg <- ret[["ensp_to_ensg"]]
+#'
+#' @export
+get_stringdb <- function(
   stringdb_tax = 9606,
   stringdb_thr = 900,
   mart
@@ -90,8 +109,48 @@ LErNet.get_stringdb <- function(
 }
 
 
-
-LErNet.get_genomic_context <- function(
+#' Extraction fo the genomic context
+#'
+#' Retrieves the genomic context of input lncRNAs.
+#' The genomic context is defined as the set of protin coding genes
+#' that resides within a given range.
+#'
+#' @param poitions a data.frame reporting gemoic positions. Columns are \code{id type seqname start end}. It may contain features nto lited in \code{lncgenes} and \code{pcgenes}
+#' @param lncgenes a list of lncRNA genes
+#' @param pngenes a list of protein-coding genes that are of interest for the study.
+#' @param max_window the maximum size of the genomic range
+#' @param stricg_genomics if \code{FALSE}, it allows the genomic context to be forme dby p.c. genes in the \code{pcgenes} list.
+#'
+#' @return a two column data.frame reporting neighborhood information. The first column gives lncRNAs and the second column gives their associated neighbors.
+#'
+#' @examples
+#' library(R.utils)
+#' library(xlsx)
+#' lncrna_file <- system.file("extdata", "41598_2018_30359_MOESM2_ESM.xlsx", package = "LErNet")
+#' pcrna_file <- system.file("extdata", "41598_2018_30359_MOESM3_ESM.xlsx", package = "LErNet")
+#' gtf_file <- system.file("extdata", "gencode.vM20.chr_patch_hapl_scaff.annotation.gtf.gz", package = "LErNet")
+#' pcgenes<-read.xlsx(pcrna_file,sheetIndex = 1)
+#' pcgenes<-as.character(pcgenes$gene_id)
+#' lncrnaInfo<-read.xlsx(lncrna_file, sheetIndex = 1)
+#' lncrnaInfo <- data.frame(lapply(lncrnaInfo, as.character), stringsAsFactors=FALSE)
+#' last<-which(lncrnaInfo$significant == 'FALSE')[1]
+#' lncrnaInfo<-lncrnaInfo[1:last-1,]
+#' lncrnaAll<-as.character(lncrnaInfo$gene_id)
+#' complete_positions <- LErNet.load_gtf(gtf_file)
+#' novel<-lncrnaInfo
+#' novel<-novel[novel$isoform_status == "lncRNA_Novel", ]
+#' chrs <- paste0("chr",sapply(strsplit(sapply(strsplit( novel$locus, "-"), `[`, 1), ":"), `[`, 1))
+#' starts <- sapply(strsplit(sapply(strsplit(novel$locus, "-"), `[`, 1), ":"), `[`, 2)
+#' ends <- sapply(strsplit(novel$locus, "-"), `[`, 2)
+#' novel_gtf <- data.frame( "id" = novel$gene_id, "type" = rep('novel lncRNA', times = nrow(novel)),
+#' "seqname" = chrs, "start" = starts, "end" = ends )
+#' complete_positions <- rbind(complete_positions, novel_gtf)
+#' rownames(complete_positions) <- seq(1:nrow(complete_positions))
+#'
+#' genomic_context <- LErNet.get_genomic_context(positions = complete_positions, lncgenes = lncrnaAll, pcgenes = pcgenes, max_window = 100000, strict_genomics = TRUE)
+#'
+#' @export
+get_genomic_context <- function(
   positions,
   lncgenes,
   pcgenes,
@@ -152,13 +211,33 @@ LErNet.get_genomic_context <- function(
 }
 
 
-
-LErNet.expand <- function(
-  pcgenes,
+#' Expansion of the seed network (fromt he genomic context)
+#'
+#' Expands with connectors the network formed by seed proteins,
+#' that are the producs fo the genes int he genomic context,
+#' by the expasion algorithm.
+#' Connectors are neighbors of selected proteins in the input PPI network.
+#'
+#' @param genomic_context a two column data.fram produced by \code{\link[LErNet]{LErNet.get_genomic_context}}
+#' @param ppi_network a two column data.frame representing PPI network edges (see also \code{\link[LErNet]{LErNet.get_stringdb}} )
+#' @param ensp_to_ensg a two column data.frame for mapping proteins to their producer genes (see also \code{\link[LErNet]{LErNet.get_stringdb}} )
+#' @param strict_proteins a list of proteins
+#' @param strict_connectors if \code{TRUE} connectors can onyl be choosen from the \code{strict_proteins} list
+#'
+#' @return a list
+#' \describe{
+#'   \item{network_components}{a list of connected components of the resultant expanded network. Each compoent is a list of proteins.}
+#'   \item{network_seeds}{list of seed proteins that have succefully been mapped to the PPI network.}
+#' }
+#'
+#' @examples
+#'
+#' @export
+expand_seeds <- function(
   genomic_context,
   ppi_network,
   ensp_to_ensg,
-  mart,
+  strict_proteins,
   strict_connectors = TRUE
 )
 {
@@ -168,10 +247,11 @@ LErNet.expand <- function(
   res_prot<-matching$ensembl_peptide_id
 
 
-  mrna_annot<-getBM(attributes = c("ensembl_gene_id", "ensembl_transcript_id", "ensembl_peptide_id"),
-                    filters = "ensembl_gene_id", values = unique(pcgenes), mart = mart)
+  #pcgenes <- strinct_list
+  #mrna_annot<-getBM(attributes = c("ensembl_gene_id", "ensembl_transcript_id", "ensembl_peptide_id"),
+  #                  filters = "ensembl_gene_id", values = unique(pcgenes), mart = mart)
+  #strict_proteins<-mrna_annot$ensembl_peptide_id
 
-  strict_proteins<-mrna_annot$ensembl_peptide_id
   empty<-which(strict_proteins == "")
   strict_proteins<-strict_proteins[-empty]
 
@@ -373,14 +453,36 @@ LErNet.expand <- function(
     remove(toRemove)
   }
 
-  return(  list(  "network_components" = resSub, "input_proteins" = strict_proteins, "network_seeds" = res_prot) )
+  return(  list(  "network_components" = resSub, "network_seeds" = res_prot) )
 
  # list of lists
 }
 
 
-
-LErNet.visualize <-function(
+#' Visualization of the expanded network
+#'
+#' Visualizes the expanded network,
+#' composed by seed proteins and connectors.
+#' LncRNA are added together with extra edges in order to report the genomic context.
+#' LncRNAs are linked to the proteins that are products of their genomic context.
+#'
+#'
+#' @param lncgenes a list of lncRNA genes
+#' @param genomic_context the genomc context of the lncRNAs (see \code{\link[LErNet]{LErNet.get_genomic_context}})
+#' @param ppi_network a two column data.frame representing PPI network edges (see also \code{\link[LErNet]{LErNet.get_stringdb}} )
+#' @param ensp_to_ensg a two column data.frame for mapping proteins to their producer genes (see also \code{\link[LErNet]{LErNet.get_stringdb}} )
+#' @param input_proteins the complete list of input proteins,that are of interest for the study
+#' @param network_seeds the lsit of seed protieins
+#' @param expanded_elements the list of proteins that must be visualized
+#' @param mart a biomaRt ojbect used to visualize symbols instead of Ensembl IDs
+#' @param mart_symbol_column column of the biomaRt ojbect fomr wich symbols are retrieved
+#'
+#' @return visualizes the network in the Viewer window
+#'
+#' @examples
+#'
+#' @export
+visualize <-function(
   lncgenes, #strict_lncgenes <- lncgenes
   genomic_context, #lnc_neighbors <- closest
   ensp_to_ensg, #complete_ensp_to_ensg <- string_genes
@@ -523,26 +625,50 @@ LErNet.visualize <-function(
 }
 
 
-
-LErNet.ensembl_to_entrez <-function(
-  biomart = "ensembl",
-  dataset = "hsapiens_gene_ensembl",
-  ensembl_genes
+#' Mapping from Ensembl to Entrez
+#'
+#' Maps a list of protein IDs in the Ensmbl format to the Entrez naming system
+#'
+#' @param ens_proteins list of Ensembl IDs
+#' @paramt mart a biomaRt object for the given species
+#'
+#' @return a data.frame representing the mapping
+#'
+#' @export
+enps_to_entrez <-function(
+  ens_proteins,
+  mart
 )
 {
-
+  mseeds <- getBM(attributes = c("ensembl_peptide_id","ensembl_gene_id","entrezgene"),
+                  filters = "ensembl_peptide_id", values = ens_proteins, mart = mart)
+  return(mseeds)
 }
 
 
-LErNet.enrich <-function(
+#' Functional enrichment
+#'
+#' Computes functional enrichment of a given set of proteins via the ReactomePA package.
+#' A bar plot reporting the enriched pathway and their p-values is shown.
+#'
+#' @param ens_proteins list of proteins, in Ensembl format, for which to compute the enrichment
+#' @param oganism oganism name (see \code{\link[ReactomePA]{enrichPathway}})
+#' @param mart a biomaRt object of the given species need for the conversion from  Ensembl to Entrez IDs
+#' @max_to_show max number of enriched pathway to show in the plot
+#'
+#' @return a ReactomePA result object.
+#'
+#' @examples
+#'
+#' @export
+enrich <-function(
   ens_proteins,
   organism,
   mart,
   max_to_show = NULL
 )
 {
-  mseeds <- getBM(attributes = c("ensembl_peptide_id","ensembl_gene_id","entrezgene"),
-                  filters = "ensembl_peptide_id", values = ens_proteins, mart = mart)
+  mseeds <- enps_to_entrez(ens_proteins, mart)
 
   w<-enrichPathway(gene = unique(mseeds$entrezgene), organism = organism,
                    pvalueCutoff=0.05, pAdjustMethod = "BH",
@@ -564,18 +690,36 @@ LErNet.enrich <-function(
 }
 
 
-LErNet.characterize <- function(
-  lncgenes,  # list of lncRNAs ENSG
-  pcgenes,	# list of pcnRNAs ENSG
-  complete_positions,	# dataframe  ENSG type[pc,lnc] chr strand start end # contains also non DE elements
-  max_window = 100000,
-  strict_genomics = TRUE,
-  complete_PPI, # dataframe of edges ENSP1 - ENSP2,
-  complete_ensg_to_ensp, # dataframe  ENSG -> ENSP (stringdb)
-  strict_connectors = TRUE
-)
-{
-
-}
+# LErNet.characterize <- function(
+#   lncgenes,  # list of lncRNAs ENSG
+#   pcgenes,	# list of pcnRNAs ENSG
+#   complete_positions,	# dataframe  ENSG type[pc,lnc] chr strand start end # contains also non DE elements
+#   max_window = 100000,
+#   strict_genomics = TRUE,
+#   complete_PPI, # dataframe of edges ENSP1 - ENSP2,
+#   complete_ensg_to_ensp, # dataframe  ENSG -> ENSP (stringdb)
+#   strict_connectors = TRUE
+# )
+# {
+#   genomic_context <- LErNet.get_genomic_context(
+#     positions = complete_positions,
+#     lncgenes = lncgenes,
+#     pcgenes = pcgenes,
+#     max_window = max_window,
+#     strict_genomics = strict_genomics)
+#
+#   annot<-getBM(attributes = c("ensembl_gene_id", "ensembl_transcript_id", "ensembl_peptide_id"),
+#                filters = "ensembl_gene_id", values = unique(pcgenes), mart = mart)
+#   strict_proteins<-annot$ensembl_peptide_id
+#   empty<-which(strict_proteins == "")
+#   strict_proteins<-strict_proteins[-empty]
+#
+#   ret <- LErNet.expand(
+#     genomic_context = genomic_context,
+#     ppi_network = ppi_network,
+#     ensp_to_ensg = ensp_to_ensg,
+#     strict_proteins = strict_proteins,
+#     strict_connectors = TRUE)
+# }
 
 
