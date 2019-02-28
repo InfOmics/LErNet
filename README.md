@@ -156,7 +156,7 @@ input_proteins <- ret[["input_proteins"]]
 network_seeds <- ret[["network_seeds"]]
 ```
 
-LErNet allows to visualize the results of the analysis through the use of the package "visNetwork". The function "visualize" takes in input the list of lncRNAs, 
+LErNet allows to visualize the results of the analysis through the use of the package "visNetwork". The function "visualize" takes in input the list of lncRNAs, the genomic context, the mapping table of ENSEMBL ids, the list of strict starting proteins, the network seeds, the PPI network, one or more network components extracted by LErNet, the connection to Biomart database and the Biomart identifier to show gene SYMBOLs.
 
 ```
 LErNet::visualize(
@@ -171,6 +171,9 @@ LErNet::visualize(
   mart_symbol_column = "mgi_symbol"  # "hgnc_symbol" for human
 )
 
+The last step is the functional enrichment of the results. Basically LErNet exploits the package ReactomePA to retrieve significant pathways.
+
+```
 enrichment <- LErNet::enrich(  ens_proteins = unlist(network_components),  organism = "mouse",  mart = mart)
 #LErNet::enrich(  ens_proteins = unlist(network_components),  organism = "mouse",  mart = mart, max_to_show =2)
 ```
