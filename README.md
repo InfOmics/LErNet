@@ -110,7 +110,7 @@ ppi_network <- ret[["ppi_network"]]
 ensp_to_ensg <- ret[["ensp_to_ensg"]]
 ```
 
-The second step is to generate the genomic context, i.e. to find the genomic seeds () necessary to run the expansion phase through th PPI network. The function to perform accomplish this task is "get_genomic_context". The function returns a dataframe containing .. and a partner coding gene for each lncRNA. 
+The second step is to generate the genomic context, i.e. to find the genomic seeds () necessary to run the expansion phase through th PPI network. The function to perform accomplish this task is "get_genomic_context". The function takes in input the information retrieved from the GTF file (complete_positions), the list of protein coding genes and lncRNAs and a window in which to search for genomic neighbors. The function returns a dataframe containing for each lncRNA one or more partner coding genes. 
 
 ```
 genomic_context <- LErNet::get_genomic_context(positions = complete_positions, lncgenes = lncrnaAll, pcgenes = pcgenes, max_window = 100000, strict_genomics = TRUE)
@@ -120,22 +120,33 @@ It can be useful to show some basic statistics on the generated seeds
 ```
 # Number of genomic seeds
 length(unique(genomic_context$partner_coding_gene))
-# Mean
+
+# Mean number of genomic seeds for each lncRNA
 mean(table(genomic_context$partner_coding_gene))
 
+```
 
+The following lines of codes are necessary to match the seeds proteins with the input coding genes to obtain a set of strict starting proteins.
+
+```
 annot<-getBM(attributes = c("ensembl_gene_id", "ensembl_transcript_id", "ensembl_peptide_id"),
              filters = "ensembl_gene_id", values = unique(pcgenes), mart = mart)
+
 strict_proteins<-annot$ensembl_peptide_id
 empty<-which(strict_proteins == "")
 strict_proteins<-strict_proteins[-empty]
+```
 
+The step x is the core phase of LErNEet, i.e. the expansion phase with the function "expand_seeds". Expansion takes innput the genomic context, the PPI network, the id mapping table, the list of starting proteins. The parameter strict_connectors (TRUE as default) specify that the connector proteins must be in the list of strict starting proteins. 
+
+```
 ret <- LErNet::expand_seeds(
                 genomic_context = genomic_context,
                 ppi_network = ppi_network,
                 ensp_to_ensg = ensp_to_ensg,
                 strict_proteins = strict_proteins,
                 strict_connectors = TRUE)
+```
 
 network_components <- ret[["network_components"]]
 input_proteins <- ret[["input_proteins"]]
