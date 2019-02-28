@@ -1,0 +1,32 @@
+Package: LErNet
+Type: Package
+Title: LErNet: characterization of lncRNAs via context-aware network expansion and enrichment analysis
+Version: 0.1.0
+Author: Vincenzo Bonnici, Simone Caligola, Giulia Fiorini, Luca Giudice, Rosalba Giugno
+Maintainer: Vincenzo Bonnici <vincenzo.bonnici@univr.it>
+Description:Long non-coding RNAs (lncRNA) have recently acquired a boost of interest 
+    for their implication in several biological conditions. 
+    However, many of these elements are not yet annotate. 
+    LErNet is focused on a new network analysis method for 
+    annotating lncRNAs and guide the enrichment analysis. 
+    The core is a network expansion algorithm that aims to 
+    enrich the context of lncRNAs. The context is constructed 
+    by integrating the genes encoding proteins that are found 
+    next to the non-coding elements at both the genome and 
+    the system level. The pipeline is particularly useful in 
+    situations where the functions of discovered lncRNAs are 
+    not yet known.
+License: MIT
+Encoding: UTF-8
+LazyData: true
+Imports:
+    GenomicRanges,
+    GenomicFeatures,
+    STRINGdb,
+    igraph,
+    biomaRt,
+    visNetwork,
+    ReactomePA
+Suggests:
+    R.utils,
+    xlsx
