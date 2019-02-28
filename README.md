@@ -137,7 +137,7 @@ empty<-which(strict_proteins == "")
 strict_proteins<-strict_proteins[-empty]
 ```
 
-The step x is the core phase of LErNEet, i.e. the expansion phase with the function "expand_seeds". Expansion takes innput the genomic context, the PPI network, the id mapping table, the list of starting proteins. The parameter strict_connectors (TRUE as default) specify that the connector proteins must be in the list of strict starting proteins. 
+The step x is the core phase of LErNEet, i.e. the expansion phase with the function "expand_seeds". Expansion takes innput the genomic context, the PPI network, the id mapping table, the list of starting proteins. The parameter strict_connectors (TRUE as default) specify that the connector proteins must be in the list of strict starting proteins.  
 
 ```
 ret <- LErNet::expand_seeds(
@@ -146,11 +146,19 @@ ret <- LErNet::expand_seeds(
                 ensp_to_ensg = ensp_to_ensg,
                 strict_proteins = strict_proteins,
                 strict_connectors = TRUE)
+```
 
+The function "expand_seeds" returns a list containing a dataframe with the network components, a vector with the proteins in input and a vector with the network seeds:
+
+```
 network_components <- ret[["network_components"]]
 input_proteins <- ret[["input_proteins"]]
 network_seeds <- ret[["network_seeds"]]
+```
 
+LErNet allows to visualize the results of the analysis through the use of the package "visNetwork". The function "visualize" takes in input the list of lncRNAs, 
+
+```
 LErNet::visualize(
   lncgenes = lncrnaAll,
   genomic_context = genomic_context,
