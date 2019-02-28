@@ -53,24 +53,26 @@ gtf_file <- system.file("extdata", "gencode.vM20.chr_patch_hapl_scaff.annotation
 
 pcgenes<-read.xlsx(pcrna_file,sheetIndex = 1)
 pcgenes<-as.character(pcgenes$gene_id)
-# <- list of strict pcgenes
 
 lncrnaInfo<-read.xlsx(lncrna_file, sheetIndex = 1)
 lncrnaInfo <- data.frame(lapply(lncrnaInfo, as.character), stringsAsFactors=FALSE)
 last<-which(lncrnaInfo$significant == 'FALSE')[1]
 lncrnaInfo<-lncrnaInfo[1:last-1,]
 lncrnaAll<-as.character(lncrnaInfo$gene_id)
-# <- list of strict lncgenes
 
 ```
-LErNet provides a useful function to load into a dataframe the necessary information from a GTF file.  
+LErNet provides the function "load_gtf" to load into a dataframe the necessary information from a GTF file.
 
 ```
 complete_positions <- LErNet::load_gtf(gtf_file)
+```
 
-# mi ricavo i novel per ottenere le loro coordinate sul gtf
+It is necessary that the dataframe must contain the information for all genes and lncRNAs in input. In this example data come with information about novel lncRNAs, these information must be added to the dataframe "complete_positions":
+
+
+```
+# extract the novel lncRNAs from the dataframe "lncrnaInfo"
 novel<-lncrnaInfo
-#novel<-novel[grep(pattern = "XLOC", x = novel$gene_id), ]
 novel<-novel[novel$isoform_status == "lncRNA_Novel", ]
 
 chrs <- paste0("chr",sapply(strsplit(sapply(strsplit( novel$locus, "-"), `[`, 1), ":"), `[`, 1))
