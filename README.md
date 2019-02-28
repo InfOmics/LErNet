@@ -87,6 +87,7 @@ complete_positions <- rbind(complete_positions, novel_gtf)
 rownames(complete_positions) <- seq(1:nrow(complete_positions))
 ```
 
+LErNet exploits PPI network to expand a set of protein coding genes associated with lncRNAs. In this example the STRING PPI network database is exploited, however LErNet can take as input a dataframe with 2 columns containing the edges of the network. Each element of the netwoek must be identified with its ENSEMBL id.  
 
 
 ```
