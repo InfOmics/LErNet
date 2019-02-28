@@ -103,13 +103,17 @@ length(unique(genomic_context$partner_coding_gene))
 mean(table(genomic_context$partner_coding_gene))
 
 
+annot<-getBM(attributes = c("ensembl_gene_id", "ensembl_transcript_id", "ensembl_peptide_id"),
+             filters = "ensembl_gene_id", values = unique(pcgenes), mart = mart)
+strict_proteins<-annot$ensembl_peptide_id
+empty<-which(strict_proteins == "")
+strict_proteins<-strict_proteins[-empty]
 
 ret <- LErNet.expand(
-                pcgenes = pcgenes,
                 genomic_context = genomic_context,
                 ppi_network = ppi_network,
                 ensp_to_ensg = ensp_to_ensg,
-                mart = mart,
+                strict_proteins = strict_proteins,
                 strict_connectors = TRUE)
 
 network_components <- ret[["network_components"]]
