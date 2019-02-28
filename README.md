@@ -31,9 +31,11 @@ install_github("InfOmics/LErNet")
 
 <hr />
 
-## Example
+## Running example
 
 We report a step-by-step example to execute LErNet on the data provided by Zhao et al. The dataset is composed by a list of differentially expressed genes and long non-coding RNA (lncRNA). Original excel files are provided with the LErNet package in order to correctly execute the analysis. Further, a GTF file is provided to retrieve genomic context of genes and lncRNAs.
+
+To run the example..
 
 ```
 library(R.utils)
@@ -41,7 +43,7 @@ library(xlsx)
 library(biomaRt)
 
 ```
-The first step is to restrieve the path of the excel files in the LErNEt pacjage:
+
 
 ```
 lncrna_file <- system.file("extdata", "41598_2018_30359_MOESM2_ESM.xlsx", package = "LErNet")
@@ -49,6 +51,9 @@ pcrna_file <- system.file("extdata", "41598_2018_30359_MOESM3_ESM.xlsx", package
 gtf_file <- system.file("extdata", "gencode.vM20.chr_patch_hapl_scaff.annotation.gtf.gz", package = "LErNet")
 ```
 
+
+
+```
 pcgenes<-read.xlsx(pcrna_file,sheetIndex = 1)
 pcgenes<-as.character(pcgenes$gene_id)
 # <- list of strict pcgenes
