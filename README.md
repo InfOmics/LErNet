@@ -103,15 +103,21 @@ After, the function "get_stringdb" must be executed to map ENSEMBL protein ids i
 ret <- LErNet::get_stringdb( stringdb_tax = stringdb_tax, stringdb_thr = stringdb_thr, mart = mart)
 ```
 
-The function "get_stringdb" returns a list with 2 dataframe, one containin the PPI network and the second with the mapping table of ENSEMBL ids.
+The function "get_stringdb" returns a list with 2 dataframe, one named "ppi_network" containing the PPI network and the second named "ensp_to_ensg" containing the mapping table of ENSEMBL ids. The first dataframe can be provided to LErNEt without the use of STRING.
 
 ```
 ppi_network <- ret[["ppi_network"]]
 ensp_to_ensg <- ret[["ensp_to_ensg"]]
+```
 
+The second step is to generate the genomic context, i.e. to find the genomic seeds () necessary to run the expansion phase through th PPI network. The function to perform accomplish this task is "get_genomic_context". The function returns a dataframe containing .. and a partner coding gene for each lncRNA. 
 
+```
 genomic_context <- LErNet::get_genomic_context(positions = complete_positions, lncgenes = lncrnaAll, pcgenes = pcgenes, max_window = 100000, strict_genomics = TRUE)
+```
+It can be useful to show some basic statistics on the generated seeds
 
+```
 # Number of genomic seeds
 length(unique(genomic_context$partner_coding_gene))
 # Mean
