@@ -33,9 +33,9 @@ install_github("InfOmics/LErNet")
 
 ## Running example
 
-We report a step-by-step example to execute LErNet on the data provided by Zhao et al. The dataset is composed by a list of differentially expressed genes and long non-coding RNA (lncRNA). Original excel files are provided with the LErNet package in order to correctly execute the analysis. Further, a GTF file is provided to retrieve genomic context of genes and lncRNAs.
+We report a step-by-step example to execute LErNet on the data provided by Zhao et al. The dataset is composed by a list of differentially expressed genes and long non-coding RNA (lncRNA). Original excel files are provided with the LErNet package in order to correctly execute the analysis. Further, a GTF file (from ENCODE database) is provided to retrieve genomic context of genes and lncRNAs.
 
-To run the example it's necessary to install the following libraries:
+To run the example it's necessary to install and load the following libraries:
 
 ```
 library(R.utils)
@@ -50,11 +50,7 @@ The first step of the analysis is to retrieve a set of genes and lncRNAs of inte
 lncrna_file <- system.file("extdata", "41598_2018_30359_MOESM2_ESM.xlsx", package = "LErNet")
 pcrna_file <- system.file("extdata", "41598_2018_30359_MOESM3_ESM.xlsx", package = "LErNet")
 gtf_file <- system.file("extdata", "gencode.vM20.chr_patch_hapl_scaff.annotation.gtf.gz", package = "LErNet")
-```
 
-
-
-```
 pcgenes<-read.xlsx(pcrna_file,sheetIndex = 1)
 pcgenes<-as.character(pcgenes$gene_id)
 # <- list of strict pcgenes
@@ -66,6 +62,10 @@ lncrnaInfo<-lncrnaInfo[1:last-1,]
 lncrnaAll<-as.character(lncrnaInfo$gene_id)
 # <- list of strict lncgenes
 
+```
+LErNet provides a useful function to load into a dataframe the necessary information from a GTF file.  
+
+```
 complete_positions <- LErNet::load_gtf(gtf_file)
 
 # mi ricavo i novel per ottenere le loro coordinate sul gtf
