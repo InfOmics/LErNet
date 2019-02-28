@@ -146,7 +146,6 @@ ret <- LErNet::expand_seeds(
                 ensp_to_ensg = ensp_to_ensg,
                 strict_proteins = strict_proteins,
                 strict_connectors = TRUE)
-```
 
 network_components <- ret[["network_components"]]
 input_proteins <- ret[["input_proteins"]]
