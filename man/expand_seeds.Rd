@@ -2,7 +2,7 @@
 % Please edit documentation in R/LErNet.R
 \name{expand_seeds}
 \alias{expand_seeds}
-\title{Expansion of the seed network (fromt he genomic context)}
+\title{Expansion of the seed network}
 \usage{
 expand_seeds(genomic_context, ppi_network, ensp_to_ensg, strict_proteins,
   strict_connectors = TRUE)

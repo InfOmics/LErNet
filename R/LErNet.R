@@ -211,7 +211,7 @@ get_genomic_context <- function(
 }
 
 
-#' Expansion of the seed network (fromt he genomic context)
+#' Expansion of the seed network
 #'
 #' Expands with connectors the network formed by seed proteins,
 #' that are the producs fo the genes int he genomic context,
