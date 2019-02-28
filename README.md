@@ -88,15 +88,18 @@ rownames(complete_positions) <- seq(1:nrow(complete_positions))
 ```
 
 LErNet exploits PPI network to expand a set of protein coding genes associated with lncRNAs. In this example the database STRING is exploited to build the PPI network, however LErNet can take as input a dataframe with 2 columns containing the edges of the network. Each element of the netwoek must be identified with its ENSEMBL id. To build the network with STRING is necessary to specfy a threshold
-of significance for protein interactions and peform a mapping phase in which ENSEMBL protein ids must be mapped into ENSEMBL gene ids.
+of significance for protein interactions, the taxonomy id of the organism of interest:
 
 
 ```
 mart = useMart(biomart = "ensembl", dataset = "mmusculus_gene_ensembl")
 stringdb_tax = 10090
 stringdb_thr = 900
+```
 
+After the function "get_stringdb" must be executed to map ENSEMBL protein ids into ENSEMBL gene ids:
 
+```
 ret <- LErNet::get_stringdb( stringdb_tax = stringdb_tax, stringdb_thr = stringdb_thr, mart = mart)
 ```
 
