@@ -71,27 +71,30 @@ It is necessary that the dataframe must contain the information for all genes an
 
 
 ```
-# extract the novel lncRNAs from the dataframe "lncrnaInfo"
+# Sxtract the novel lncRNAs from the dataframe "lncrnaInfo"
 novel<-lncrnaInfo
 novel<-novel[novel$isoform_status == "lncRNA_Novel", ]
 
+# Some elaboration to extract the necessary information about lncRNAs 
 chrs <- paste0("chr",sapply(strsplit(sapply(strsplit( novel$locus, "-"), `[`, 1), ":"), `[`, 1))
 starts <- sapply(strsplit(sapply(strsplit(novel$locus, "-"), `[`, 1), ":"), `[`, 2)
 ends <- sapply(strsplit(novel$locus, "-"), `[`, 2)
 novel_gtf <- data.frame( "id" = novel$gene_id, "type" = rep('novel lncRNA', times = nrow(novel)),
                          "seqname" = chrs, "start" = starts, "end" = ends )
 
+# Add information of novel lncRNAs into the dataframe containing information about known genes/lncRNAs
 complete_positions <- rbind(complete_positions, novel_gtf)
 rownames(complete_positions) <- seq(1:nrow(complete_positions))
-
-# complete_positions
-
+```
 
 
 
+```
 mart = useMart(biomart = "ensembl", dataset = "mmusculus_gene_ensembl")
 stringdb_tax = 10090
 stringdb_thr = 900
+
+
 ret <- LErNet::get_stringdb( stringdb_tax = stringdb_tax, stringdb_thr = stringdb_thr, mart = mart)
 
 ppi_network <- ret[["ppi_network"]]
