@@ -170,6 +170,7 @@ LErNet::visualize(
   mart = mart,
   mart_symbol_column = "mgi_symbol"  # "hgnc_symbol" for human
 )
+```
 
 The last step is the functional enrichment of the results. Basically LErNet exploits the package ReactomePA to retrieve significant pathways.
 
