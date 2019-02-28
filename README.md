@@ -20,10 +20,17 @@ If you have used any of the PanDelos project software, please cite the following
      LErNet: characterization of lncRNAs via context-aware network expansion and enrichment analysis.
      
 <hr />
+
 ## Installation
 
+```
+install.packages("devtools") # if you have not installed "devtools" package
+library(devtools)
+install_github("InfOmics/LErNet")
+```
 
 <hr />
+
 ## Example
 
 ```
