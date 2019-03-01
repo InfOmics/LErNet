@@ -179,7 +179,7 @@ LErNet::visualize(
 )
 ```
 
-The last step is the functional enrichment of the results. Basically *LErNet* exploits the package ReactomePA to retrieve significant pathways.
+The last step is the functional enrichment of the results. Basically *LErNet* exploits the package ReactomePA to retrieve significant pathways through the function `enrich`: 
 
 ```R
 enrichment <- LErNet::enrich(  ens_proteins = unlist(network_components),  organism = "mouse",  mart = mart)
@@ -187,3 +187,5 @@ enrichment <- LErNet::enrich(  ens_proteins = unlist(network_components),  organ
 # for human: organism = "human"
 barplot(enrichment)
 ```
+However, the user can use the preferred tool to make functional enrichment.
+
