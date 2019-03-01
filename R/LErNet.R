@@ -252,8 +252,9 @@ expand_seeds <- function(
   #                  filters = "ensembl_gene_id", values = unique(pcgenes), mart = mart)
   #strict_proteins<-mrna_annot$ensembl_peptide_id
 
-  empty<-which(strict_proteins == "")
-  strict_proteins<-strict_proteins[-empty]
+  #empty<-which(strict_proteins == "")
+  #strict_proteins<-strict_proteins[-empty]
+  strict_proteins<-strict_proteins[ strict_proteins != ""  ]
 
   seedprot <- res_prot
   subprot <- seedprot
