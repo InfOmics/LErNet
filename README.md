@@ -35,7 +35,7 @@ install_github("InfOmics/LErNet")
 
 ## Running example
 
-We report a step-by-step example to execute LErNet on published data (Zhao et al., **Scientific reports**, 2018). The dataset is composed by a list of differentially expressed genes and long non-coding RNA (lncRNA). Original excel files are provided with the LErNet package in order to correctly execute the analysis. Further, a GTF file (from GENCODE database) is provided to retrieve genomic context of genes and lncRNAs.
+We report a step-by-step example to execute LErNet on published data (Zhao et al., *Scientific reports*, 2018). The dataset is composed by a list of differentially expressed genes and long non-coding RNA (lncRNA). Original excel files are provided with the LErNet package in order to correctly execute the analysis. Further, a GTF file (from GENCODE database) is provided to retrieve genomic context of genes and lncRNAs.
 
 It's necessary to install and load the following libraries to run the example:
 
