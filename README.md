@@ -33,9 +33,9 @@ install_github("InfOmics/LErNet")
 
 ## Running example
 
-We report a step-by-step example to execute LErNet on the data provided by Zhao et al. The dataset is composed by a list of differentially expressed genes and long non-coding RNA (lncRNA). Original excel files are provided with the LErNet package in order to correctly execute the analysis. Further, a GTF file (from ENCODE database) is provided to retrieve genomic context of genes and lncRNAs.
+We report a step-by-step example to execute LErNet on published data (Zhao et al., Scientific reports, 2018). The dataset is composed by a list of differentially expressed genes and long non-coding RNA (lncRNA). Original excel files are provided with the LErNet package in order to correctly execute the analysis. Further, a GTF file (from GENCODE database) is provided to retrieve genomic context of genes and lncRNAs.
 
-To run the example it's necessary to install and load the following libraries:
+It's necessary to install and load the following libraries to run the example:
 
 ```
 library(R.utils)
@@ -43,7 +43,7 @@ library(xlsx)
 library(biomaRt)
 
 ```
-The first step of the analysis is to retrieve a set of genes and lncRNAs of interest and the information of the genomic context. In the folowing lines of code DE genes and lncRNAs are obtained directly from the excel files provided by LErNet and loaded after several preprocess operations. 
+The first step of the analysis is to retrieve a set of genes and lncRNAs of interest and the information of the genomic context. In the folowing lines of code DE genes and DE lncRNAs are obtained directly from the excel files provided within the LErNet package and loaded after several preprocess operations. 
  
 
 ```
@@ -61,13 +61,13 @@ lncrnaInfo<-lncrnaInfo[1:last-1,]
 lncrnaAll<-as.character(lncrnaInfo$gene_id)
 
 ```
-LErNet provides the function "load_gtf" to load into a dataframe the necessary information from a GTF file.
+LErNet provides the function `load_gtf` to load into a dataframe the necessary information from a GTF file.
 
 ```
 complete_positions <- LErNet::load_gtf(gtf_file)
 ```
 
-It is necessary that the dataframe must contain the information for all genes and lncRNAs in input. In this example data come with information about novel lncRNAs, these information must be added to the dataframe "complete_positions":
+It is necessary that the dataframe contains the information for all genes and lncRNAs in input. In this example data come with information about novel lncRNAs, these information must be added to the dataframe "complete_positions":
 
 
 ```
