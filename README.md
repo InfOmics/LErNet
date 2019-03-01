@@ -183,4 +183,5 @@ The last step is the functional enrichment of the results. Basically LErNet expl
 enrichment <- LErNet::enrich(  ens_proteins = unlist(network_components),  organism = "mouse",  mart = mart)
 # LErNet::enrich(  ens_proteins = unlist(network_components),  organism = "mouse",  mart = mart, max_to_show =2)
 # for human: organism = "human"
+barplot(enrichment)
 ```
