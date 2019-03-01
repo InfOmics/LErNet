@@ -37,7 +37,7 @@ We report a step-by-step example to execute LErNet on published data (Zhao et al
 
 It's necessary to install and load the following libraries to run the example:
 
-```
+```R
 library(R.utils)
 library(xlsx)
 library(biomaRt)
@@ -46,7 +46,7 @@ library(biomaRt)
 The first step of the analysis is to retrieve a set of genes and lncRNAs of interest and the information of the genomic context. In the folowing lines of code DE genes and DE lncRNAs are obtained directly from the excel files provided within the LErNet package and loaded after several preprocess operations. 
  
 
-```
+```R
 lncrna_file <- system.file("extdata", "41598_2018_30359_MOESM2_ESM.xlsx", package = "LErNet")
 pcrna_file <- system.file("extdata", "41598_2018_30359_MOESM3_ESM.xlsx", package = "LErNet")
 gtf_file <- system.file("extdata", "gencode.vM20.chr_patch_hapl_scaff.annotation.gtf.gz", package = "LErNet")
@@ -63,14 +63,14 @@ lncrnaAll<-as.character(lncrnaInfo$gene_id)
 ```
 LErNet provides the function `load_gtf` to load into a dataframe the necessary information from a GTF file.
 
-```
+```R
 complete_positions <- LErNet::load_gtf(gtf_file)
 ```
 
 It is necessary that the dataframe contains the information for all genes and lncRNAs in input. In this example data come with information about novel lncRNAs, these information must be added to the dataframe "complete_positions":
 
 
-```
+```R
 # Extract the novel lncRNAs from the dataframe "lncrnaInfo"
 novel<-lncrnaInfo
 novel<-novel[novel$isoform_status == "lncRNA_Novel", ]
@@ -91,7 +91,7 @@ LErNet exploits PPI network to expand a set of protein coding genes associated w
 of significance for protein interactions, the taxonomy id of the organism of interest:
 
 
-```
+```R
 mart <- useMart(biomart = "ensembl", dataset = "mmusculus_gene_ensembl")
 #WARNING: on R <= 3.4 this may cause mutiple errors. Please, run it until no errors are arised.
 stringdb_tax = 10090
@@ -105,26 +105,26 @@ stringdb_thr = 900
 
 After, the function "get_stringdb" must be executed to map ENSEMBL protein ids into ENSEMBL gene ids. To perform the mapping phase a connection to BioMart is needed.
 
-```
+```R
 ret <- LErNet::get_stringdb( stringdb_tax = stringdb_tax, stringdb_thr = stringdb_thr, mart = mart)
 ```
 
 The function "get_stringdb" returns a list with 2 dataframe, one named "ppi_network" containing the PPI network and the second named "ensp_to_ensg" containing the mapping table of ENSEMBL ids. The first dataframe can be provided to LErNEt without the use of STRING.
 
-```
+```R
 ppi_network <- ret[["ppi_network"]]
 ensp_to_ensg <- ret[["ensp_to_ensg"]]
 ```
 
 The second step is to generate the genomic context, i.e. to find the genomic seeds () necessary to run the expansion phase through th PPI network. The function to perform accomplish this task is "get_genomic_context". The function takes in input the information retrieved from the GTF file (complete_positions), the list of protein coding genes and lncRNAs and a window in which to search for genomic neighbors. The function returns a dataframe containing for each lncRNA one or more partner coding genes. 
 
-```
+```R
 genomic_context <- LErNet::get_genomic_context(positions = complete_positions, lncgenes = lncrnaAll, 
           pcgenes = pcgenes, max_window = 100000, strict_genomics = TRUE)
 ```
 It can be useful to show some basic statistics on the generated seeds
 
-```
+```R
 # Number of genomic seeds
 length(unique(genomic_context$partner_coding_gene))
 
@@ -135,7 +135,7 @@ mean(table(genomic_context$partner_coding_gene))
 
 The following lines of codes are necessary to match the seeds proteins with the input coding genes to obtain a set of strict starting proteins.
 
-```
+```R
 annot<-getBM(attributes = c("ensembl_gene_id", "ensembl_transcript_id", "ensembl_peptide_id"),
              filters = "ensembl_gene_id", values = unique(pcgenes), mart = mart)
 strict_proteins<-annot$ensembl_peptide_id
@@ -144,7 +144,7 @@ strict_proteins<-strict_proteins[ strict_proteins != ""  ]
 
 The step x is the core phase of LErNEet, i.e. the expansion phase with the function "expand_seeds". Expansion takes innput the genomic context, the PPI network, the id mapping table, the list of starting proteins. The parameter strict_connectors (TRUE as default) specify that the connector proteins must be in the list of strict starting proteins.  
 
-```
+```R
 ret <- LErNet::expand_seeds(
                 genomic_context = genomic_context,
                 ppi_network = ppi_network,
@@ -155,7 +155,7 @@ ret <- LErNet::expand_seeds(
 
 The function "expand_seeds" returns a list containing a dataframe with the network components, a vector with the proteins in input and a vector with the network seeds:
 
-```
+```R
 network_components <- ret[["network_components"]]
 input_proteins <- ret[["input_proteins"]]
 network_seeds <- ret[["network_seeds"]]
@@ -163,7 +163,7 @@ network_seeds <- ret[["network_seeds"]]
 
 LErNet allows to visualize the results of the analysis through the use of the package "visNetwork". The function "visualize" takes in input the list of lncRNAs, the genomic context, the mapping table of ENSEMBL ids, the list of strict starting proteins, the network seeds, the PPI network, one or more network components extracted by LErNet, the connection to Biomart database and the Biomart identifier to show gene SYMBOLs.
 
-```
+```R
 LErNet::visualize(
   lncgenes = lncrnaAll,
   genomic_context = genomic_context,
@@ -179,7 +179,7 @@ LErNet::visualize(
 
 The last step is the functional enrichment of the results. Basically LErNet exploits the package ReactomePA to retrieve significant pathways.
 
-```
+```R
 enrichment <- LErNet::enrich(  ens_proteins = unlist(network_components),  organism = "mouse",  mart = mart)
 # LErNet::enrich(  ens_proteins = unlist(network_components),  organism = "mouse",  mart = mart, max_to_show =2)
 # for human: organism = "human"
