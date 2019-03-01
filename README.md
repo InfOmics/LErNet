@@ -35,7 +35,7 @@ install_github("InfOmics/LErNet")
 
 ## Running example
 
-We report a step-by-step example to execute LErNet on published data (Zhao et al., *Scientific reports*, 2018). The dataset is composed by a list of differentially expressed genes and long non-coding RNA (lncRNA). Original excel files are provided with the LErNet package in order to correctly execute the analysis. Further, a GTF file (from GENCODE database) is provided to retrieve genomic context of genes and lncRNAs.
+We report a step-by-step example to execute LErNet on published data (Zhao et al., *Scientific reports*, 2018). The dataset is composed by a list of differentially expressed genes and long non-coding RNA (lncRNA). Original excel files are provided with the *LErNet* package in order to correctly execute the analysis. Further, a GTF file (from GENCODE database) is provided to retrieve genomic context of genes and lncRNAs.
 
 It's necessary to install and load the following libraries to run the example:
 
@@ -45,7 +45,7 @@ library(xlsx)
 library(biomaRt)
 
 ```
-The first step of the analysis is to retrieve a set of genes and lncRNAs of interest and the information of the genomic context. In the folowing lines of code DE genes and DE lncRNAs are obtained directly from the excel files provided within the LErNet package and loaded after several preprocess operations. 
+The first step of the analysis is to retrieve a set of genes and lncRNAs of interest and the information of the genomic context. In the folowing lines of code DE genes and DE lncRNAs are obtained directly from the excel files provided within the *LErNet* package and loaded after several preprocess operations. 
  
 
 ```R
@@ -63,7 +63,7 @@ lncrnaInfo<-lncrnaInfo[1:last-1,]
 lncrnaAll<-as.character(lncrnaInfo$gene_id)
 
 ```
-LErNet provides the function `load_gtf` to load into a dataframe the necessary information from a GTF file.
+*LErNet* provides the function `load_gtf` to load into a dataframe the necessary information from a GTF file.
 
 ```R
 complete_positions <- LErNet::load_gtf(gtf_file)
@@ -89,7 +89,7 @@ complete_positions <- rbind(complete_positions, novel_gtf)
 rownames(complete_positions) <- seq(1:nrow(complete_positions))
 ```
 
-LErNet exploits PPI network to expand a set of protein coding genes associated with lncRNAs. In this example the database STRING is exploited to build the PPI network, however LErNet can take as input a dataframe with 2 columns containing the edges of the network. Each element of the netwoek must be identified with its ENSEMBL id. To build the network with STRING is necessary to specfy a threshold
+*LErNet* exploits PPI network to expand a set of protein coding genes associated with lncRNAs. In this example the database STRING is exploited to build the PPI network, however *LErNet* can take as input a dataframe with 2 columns containing the edges of the network. Each element of the netwoek must be identified with its ENSEMBL id. To build the network with STRING is necessary to specfy a threshold
 of significance for protein interactions, the taxonomy id of the organism of interest:
 
 
@@ -163,7 +163,7 @@ input_proteins <- ret[["input_proteins"]]
 network_seeds <- ret[["network_seeds"]]
 ```
 
-LErNet allows to visualize the results of the analysis through the use of the package "visNetwork". The function "visualize" takes in input the list of lncRNAs, the genomic context, the mapping table of ENSEMBL ids, the list of strict starting proteins, the network seeds, the PPI network, one or more network components extracted by LErNet, the connection to Biomart database and the Biomart identifier to show gene SYMBOLs.
+*LErNet* allows to visualize the results of the analysis through the use of the package "visNetwork". The function "visualize" takes in input the list of lncRNAs, the genomic context, the mapping table of ENSEMBL ids, the list of strict starting proteins, the network seeds, the PPI network, one or more network components extracted by *LErNet*, the connection to Biomart database and the Biomart identifier to show gene SYMBOLs.
 
 ```R
 LErNet::visualize(
@@ -179,7 +179,7 @@ LErNet::visualize(
 )
 ```
 
-The last step is the functional enrichment of the results. Basically LErNet exploits the package ReactomePA to retrieve significant pathways.
+The last step is the functional enrichment of the results. Basically *LErNet* exploits the package ReactomePA to retrieve significant pathways.
 
 ```R
 enrichment <- LErNet::enrich(  ens_proteins = unlist(network_components),  organism = "mouse",  mart = mart)
