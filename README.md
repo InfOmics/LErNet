@@ -16,8 +16,8 @@ You are free to link or use *LErNet* inside source code of your own program. If 
 ## Citation
 If you have used the package LErNet in your project, please cite the following paper:
 
-     *Bonnici V., Caligola S., Fiorini G., Giudice L., Giugno R.
-     LErNet: characterization of lncRNAs via context-aware network expansion and enrichment analysis.*
+     Bonnici V., Caligola S., Fiorini G., Giudice L., Giugno R.
+     LErNet: characterization of lncRNAs via context-aware network expansion and enrichment analysis.
      
 <hr />
 
