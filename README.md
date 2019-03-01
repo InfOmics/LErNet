@@ -24,8 +24,10 @@ If you have used the package LErNet in your project, please cite the following p
 ## Installation
 
 ```R
-install.packages("devtools") # if you have not installed "devtools" package
+# if you have not installed "devtools" package
+install.packages("devtools")
 library(devtools)
+
 install_github("InfOmics/LErNet")
 ```
 
