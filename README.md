@@ -71,7 +71,7 @@ It is necessary that the dataframe must contain the information for all genes an
 
 
 ```
-# Sxtract the novel lncRNAs from the dataframe "lncrnaInfo"
+# Extract the novel lncRNAs from the dataframe "lncrnaInfo"
 novel<-lncrnaInfo
 novel<-novel[novel$isoform_status == "lncRNA_Novel", ]
 
@@ -92,9 +92,15 @@ of significance for protein interactions, the taxonomy id of the organism of int
 
 
 ```
-mart = useMart(biomart = "ensembl", dataset = "mmusculus_gene_ensembl")
+mart <- useMart(biomart = "ensembl", dataset = "mmusculus_gene_ensembl")
+#WARNING: on R <= 3.4 this may cause mutiple errors. Please, run it until no errors are arised.
 stringdb_tax = 10090
 stringdb_thr = 900
+
+# alteratively, for human
+# mart <- useMart(biomart = "ensembl", dataset = "hsapiens_gene_ensembl")
+# #WARNING: on R <= 3.4 this may cause mutiple errors. Please, run it until no errors are arised.
+# stringdb_tax = 9606
 ```
 
 After, the function "get_stringdb" must be executed to map ENSEMBL protein ids into ENSEMBL gene ids. To perform the mapping phase a connection to BioMart is needed.
@@ -113,7 +119,8 @@ ensp_to_ensg <- ret[["ensp_to_ensg"]]
 The second step is to generate the genomic context, i.e. to find the genomic seeds () necessary to run the expansion phase through th PPI network. The function to perform accomplish this task is "get_genomic_context". The function takes in input the information retrieved from the GTF file (complete_positions), the list of protein coding genes and lncRNAs and a window in which to search for genomic neighbors. The function returns a dataframe containing for each lncRNA one or more partner coding genes. 
 
 ```
-genomic_context <- LErNet::get_genomic_context(positions = complete_positions, lncgenes = lncrnaAll, pcgenes = pcgenes, max_window = 100000, strict_genomics = TRUE)
+genomic_context <- LErNet::get_genomic_context(positions = complete_positions, lncgenes = lncrnaAll, 
+          pcgenes = pcgenes, max_window = 100000, strict_genomics = TRUE)
 ```
 It can be useful to show some basic statistics on the generated seeds
 
@@ -131,10 +138,8 @@ The following lines of codes are necessary to match the seeds proteins with the 
 ```
 annot<-getBM(attributes = c("ensembl_gene_id", "ensembl_transcript_id", "ensembl_peptide_id"),
              filters = "ensembl_gene_id", values = unique(pcgenes), mart = mart)
-
 strict_proteins<-annot$ensembl_peptide_id
-empty<-which(strict_proteins == "")
-strict_proteins<-strict_proteins[-empty]
+strict_proteins<-strict_proteins[ strict_proteins != ""  ]
 ```
 
 The step x is the core phase of LErNEet, i.e. the expansion phase with the function "expand_seeds". Expansion takes innput the genomic context, the PPI network, the id mapping table, the list of starting proteins. The parameter strict_connectors (TRUE as default) specify that the connector proteins must be in the list of strict starting proteins.  
@@ -176,5 +181,6 @@ The last step is the functional enrichment of the results. Basically LErNet expl
 
 ```
 enrichment <- LErNet::enrich(  ens_proteins = unlist(network_components),  organism = "mouse",  mart = mart)
-#LErNet::enrich(  ens_proteins = unlist(network_components),  organism = "mouse",  mart = mart, max_to_show =2)
+# LErNet::enrich(  ens_proteins = unlist(network_components),  organism = "mouse",  mart = mart, max_to_show =2)
+# for uman: organism = "human"
 ```
