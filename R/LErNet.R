@@ -246,7 +246,6 @@ expand_seeds <- function(
   matching<-ensp_to_ensg[ensp_to_ensg$ensembl_gene_id %in% closestGene, ]
   res_prot<-matching$ensembl_peptide_id
 
-
   #pcgenes <- strinct_list
   #mrna_annot<-getBM(attributes = c("ensembl_gene_id", "ensembl_transcript_id", "ensembl_peptide_id"),
   #                  filters = "ensembl_gene_id", values = unique(pcgenes), mart = mart)
@@ -650,12 +649,10 @@ enps_to_entrez <-function(
 #' Functional enrichment
 #'
 #' Computes functional enrichment of a given set of proteins via the ReactomePA package.
-#' A bar plot reporting the enriched pathway and their p-values is shown.
 #'
 #' @param ens_proteins list of proteins, in Ensembl format, for which to compute the enrichment
 #' @param oganism oganism name (see \code{\link[ReactomePA]{enrichPathway}})
 #' @param mart a biomaRt object of the given species need for the conversion from  Ensembl to Entrez IDs
-#' @max_to_show max number of enriched pathway to show in the plot
 #'
 #' @return a ReactomePA result object.
 #'
@@ -665,8 +662,7 @@ enps_to_entrez <-function(
 enrich <-function(
   ens_proteins,
   organism,
-  mart,
-  max_to_show = NULL
+  mart
 )
 {
   mseeds <- enps_to_entrez(ens_proteins, mart)
@@ -677,15 +673,6 @@ enrich <-function(
                    minGSSize = 1, maxGSSize = 1000)
 
   enrichMappedSeeds<-as.data.frame(w)
-
-  if(!is.null(max_to_show)){
-    maxt = max_to_show
-  }
-  else{
-    maxt = nrow(w)
-  }
-  barplot(w, showCategory=maxt)
-
 
   return(w)
 }
