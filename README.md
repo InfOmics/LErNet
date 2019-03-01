@@ -1,5 +1,5 @@
 ### LErNet
-LErNet: characterization of lncRNAs via context-aware network expansion and enrichment analysis
+*LErNet*: characterization of lncRNAs via context-aware network expansion and enrichment analysis
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [](#lang-en)
 
@@ -7,7 +7,7 @@ LErNet: characterization of lncRNAs via context-aware network expansion and enri
 
 
 ## License
-LErNet is distributed under the MIT license. This means that it is free for both academic and commercial use. Note however that some third party components in LErNet require that you reference certain works in scientific publications.
+*LErNet* is distributed under the MIT license. This means that it is free for both academic and commercial use. Note however that some third party components in LErNet require that you reference certain works in scientific publications.
 You are free to link or use LErNet inside source code of your own program. If do so, please reference (cite) LErNet and this website. We appreciate bug fixes and would be happy to collaborate for improvements. 
 [License](https://raw.githubusercontent.com/InfOmics/LErNet/master/LICENSE)
 
