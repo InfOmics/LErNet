@@ -179,6 +179,8 @@ LErNet::visualize(
 )
 ```
 
+![This is the image returned by the function. In the left upper box it is possible to select only a group to be viewed in the plot (lncRNA, Seed Connector and Seed Protein).](https://i.imgur.com/i44PywM.png)
+
 The last step is the functional enrichment of the results. Basically *LErNet* exploits the package ReactomePA to retrieve significant pathways through the function `enrich`: 
 
 ```R
@@ -187,5 +189,8 @@ enrichment <- LErNet::enrich(  ens_proteins = unlist(network_components),  organ
 # for human: organism = "human"
 barplot(enrichment)
 ```
+
+![These are the most significant pathways retrieved by LErNet for the example with mouse genes.](https://i.imgur.com/K9XlEUM.png)
+
 However, the user can use the preferred tool to make functional enrichment.
 
