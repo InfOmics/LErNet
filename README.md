@@ -123,6 +123,7 @@ ensp_to_ensg <- ret[["ensp_to_ensg"]]
 The second step is to generate the genomic context, i.e. to find the genomic seeds necessary to run the expansion phase through th PPI network. The function to perform accomplish this task is `get_genomic_context`. The function takes in input the information retrieved from the GTF file (`complete_positions`), the list of protein coding genes and lncRNAs and a window in which to search for genomic neighbors. The function returns a dataframe containing for each lncRNA one or more partner coding genes. 
 
 ```R
+library(GenomicRanges)
 genomic_context <- LErNet::get_genomic_context(positions = complete_positions, lncgenes = lncrnaAll, 
           pcgenes = pcgenes, max_window = 100000, strict_genomics = TRUE)
 ```
