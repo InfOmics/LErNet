@@ -96,6 +96,8 @@ of significance for protein interactions, the taxonomy id of the organism of int
 ```R
 mart <- useMart(biomart = "ensembl", dataset = "mmusculus_gene_ensembl")
 #WARNING: on R <= 3.4 this may cause mutiple errors. Please, run it until no errors are arised.
+# or, artenatively, use
+#mart <- useEnsembl(biomart = "ensembl", dataset = "mmusculus_gene_ensembl", mirror = "useast")
 stringdb_tax = 10090
 stringdb_thr = 900
 
