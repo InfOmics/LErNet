@@ -640,11 +640,11 @@ enps_to_entrez <-function(
   mart
 )
 {
-  mseeds = tryCatch(
-    {return getBM(attributes = c("ensembl_peptide_id","ensembl_gene_id","entrezgene"),
+  tryCatch(
+    {mseeds <- getBM(attributes = c("ensembl_peptide_id","ensembl_gene_id","entrezgene"),
                   filters = "ensembl_peptide_id", values = ens_proteins, mart = mart)},
-    error= function(){
-      return getBM(attributes = c("ensembl_peptide_id","ensembl_gene_id","entrezgene_id"),
+    error= function(err){
+      mseeds <- getBM(attributes = c("ensembl_peptide_id","ensembl_gene_id","entrezgene_id"),
                   filters = "ensembl_peptide_id", values = ens_proteins, mart = mart)
      }
   )
