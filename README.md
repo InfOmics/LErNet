@@ -187,6 +187,8 @@ LErNet::visualize(
 The last step is the functional enrichment of the results. Basically *LErNet* exploits the package ReactomePA to retrieve significant pathways through the function `enrich`: 
 
 ```R
+BiocManager::install("org.Mm.eg.db")
+
 enrichment <- LErNet::enrich(  ens_proteins = unlist(network_components),  organism = "mouse",  mart = mart)
 # LErNet::enrich(  ens_proteins = unlist(network_components),  organism = "mouse",  mart = mart, max_to_show =2)
 # for human: organism = "human"
