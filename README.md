@@ -18,7 +18,7 @@ If you have used the package LErNet in your project, please cite the following p
 
      Bonnici V., Caligola S., Fiorini G., Giudice L., Giugno R.
      LErNet: characterization of lncRNAs via context-aware network expansion and enrichment analysis.
-     
+     In 2019 IEEE Conference on Computational Intelligence in Bioinformatics and Computational Biology (CIBCB) (pp. 1-8). IEEE.
 <hr />
 
 ## Installation
