@@ -497,13 +497,13 @@ expand_seeds_refactor <- function(
   strict_proteins <- strict_proteins[ strict_proteins != ""  ]
 
   seedprot <- res_prot
-  subprot <- seedprot
+  sub_prot <- seedprot
   ppi <- ppi_network
 
-  G <- graph_from_data_frame(d=ppi, directed=FALSE, vertices=NULL)
+  graph_from_df <- graph_from_data_frame(d=ppi, directed=FALSE, vertices=NULL)
 
-  resConn <- list()
-  resSub <- list()
+  res_conn <- list()
+  res_sub <- list()
   iter <- 1
   cond1 <- FALSE
   cond2 <- FALSE
@@ -511,130 +511,127 @@ expand_seeds_refactor <- function(
 
   while(TRUE) {
     connectors <- vector("character", length=0)
-    #print(paste0("***ITERATION ", iter))
     c <- 1
-    CandGene <- vector(mode="character", length=length(subprot))
-    for(i in 1:length(subprot)) {
-      if(subprot[i] %in% V(G)$name) {
-        N <- neighbors(graph=G, v=subprot[i])
-        N <- as.character(N$name)
-        for(j in 1:length(N)) {
-          if((!(N[j] %in% CandGene)) && (!(N[j] %in% subprot)) && !is.na(N[j])) {
-            CandGene[c] <- N[j]
+    cand_gene <- vector(mode="character", length=length(sub_prot))
+    for(i in 1:length(sub_prot)) {
+      if(sub_prot[i] %in% V(graph_from_df)$name) {
+        neighbors_graph <- neighbors(graph=graph_from_df, v=sub_prot[i])
+        neighbors_graph <- as.character(neighbors_graph$name)
+        for(j in 1:length(neighbors_graph)) {
+          if((!(neighbors_graph[j] %in% cand_gene)) && (!(neighbors_graph[j] %in% sub_prot)) && !is.na(neighbors_graph[j])) {
+            cand_gene[c] <- neighbors_graph[j]
             c <- c+1
           }
         }
       }
     }
-    remove(N)
+    remove(neighbors_graph)
     remove(i)
     remove(j)
 
-    length(CandGene)
+    length(cand_gene)
 
     while(TRUE) {
 
-      SubNet <- make_empty_graph(n=0, directed=FALSE)
-      keepV <- which(V(G)$name %in% subprot)
-      SubNet <- induced_subgraph(graph=G, vids=keepV)
+      keep_v <- which(V(graph_from_df)$name %in% sub_prot)
+      sub_net <- induced_subgraph(graph=graph_from_df, vids=keep_v)
 
-      subComp <- components(graph=SubNet)
-      if(max(subComp$csize)<2) {
+      sub_comp <- components(graph=sub_net)
+      if(max(sub_comp$csize)<2) {
         cond1 <- TRUE
         break
       }
 
-      maxSubComp <- which(subComp$csize==max(subComp$csize))###############[1]
+      max_sub_comp <- which(sub_comp$csize==max(sub_comp$csize))###############[1]
 
-      LCC <- vector(mode="integer", length=length(maxSubComp))
-      for(c in 1:length(maxSubComp)) {
-        H <- names(subComp$membership[subComp$membership==maxSubComp[c] ])
+      LCC <- vector(mode="integer", length=length(max_sub_comp))
+      for(c in 1:length(max_sub_comp)) {
+        H <- names(sub_comp$membership[sub_comp$membership==max_sub_comp[c] ])
         LCC[c] <- length(intersect(H, seedprot))
       }
-      start_triangles <- length(triangles(SubNet))/3
-      RankCand <- vector(mode="numeric", length=length(CandGene))
-      noTriangles <- vector(mode="numeric", length=length(CandGene))
+      start_triangles <- length(triangles(sub_net))/3
+      rank_cand <- vector(mode="numeric", length=length(cand_gene))
+      no_triangles <- vector(mode="numeric", length=length(cand_gene))
 
-      for(k in 1:length(CandGene)) {
-        if(strict_connectors && !(CandGene[k] %in% strict_proteins)) {
+      for(k in 1:length(cand_gene)) {
+        if(strict_connectors && !(cand_gene[k] %in% strict_proteins)) {
           next
         }
-        TmpGene <- subprot
-        TmpGene[length(TmpGene)+1] <- CandGene[k]
-        TmpNet <- induced_subgraph(graph=G, vids=which(V(G)$name %in% TmpGene))
+        tmp_gene <- sub_prot
+        tmp_gene[length(tmp_gene)+1] <- cand_gene[k]
+        tmp_net <- induced_subgraph(graph=graph_from_df, vids=which(V(graph_from_df)$name %in% tmp_gene))
 
-        comp <- components(graph=TmpNet)
+        comp <- components(graph=tmp_net)
         if(max(comp$csize)<2) {
           cond2 <- TRUE
           #print("esci in comp?")
           break
         }
-        maxComp <- which(comp$csize==max(comp$csize))############################[1]
+        max_comp <- which(comp$csize==max(comp$csize))############################[1]
 
-        LCC1 <- vector(mode="integer", length=length(maxComp))
-        for(c1 in 1:length(maxComp)) {
-          H1 <- names(comp$membership[comp$membership==maxComp[c1] ])
+        LCC1 <- vector(mode="integer", length=length(max_comp))
+        for(c1 in 1:length(max_comp)) {
+          H1 <- names(comp$membership[comp$membership==max_comp[c1] ])
           LCC1[c1] <- length(intersect(H1, seedprot))
         }
-        RankCand[k] <- max(LCC1)-max(LCC)
+        rank_cand[k] <- max(LCC1)-max(LCC)
 
-        triangles <- length(triangles(TmpNet))/3 #numero di triangoli totali nella TmpNet
+        triangles <- length(triangles(tmp_net))/3 #numero di triangoli totali nella TmpNet
 
         if(isSCA) {
-          noTriangles[k] <- 0
+          no_triangles[k] <- 0
         }
         else {
-          noTriangles[k] <- triangles-start_triangles
+          no_triangles[k] <- triangles-start_triangles
         }
 
-        remove(TmpGene)
+        remove(tmp_gene)
 
       }
 
-      # Get the IDs of CandGene that maximize the LCC value
-      idx <- which(RankCand==max(RankCand))
-      if(max(RankCand)==0) {
+      # Get the IDs of cand_gene that maximize the LCC value
+      idx <- which(rank_cand==max(rank_cand))
+      if(max(rank_cand)==0) {
         #print("esci al rank?")
         break
       }
 
       # Massimizzo il numero di triangoli
       choice <- -1 #quale idx scelgo
-      maxTr <- -1 #max numero di triangoli
+      max_tr <- -1 #max numero di triangoli
 
       if(length(idx)>1) {
         #print("ho più massimi uguali")
       }
 
-      idxSameTr <- c(rep(NA, length(idx)))
+      idx_same_tr <- c(rep(NA, length(idx)))
 
       for(y in 1:length(idx)) {
-        if(maxTr<noTriangles[idx[y]]) {
-          maxTr <- noTriangles[idx[y]]
+        if(max_tr<no_triangles[idx[y]]) {
+          max_tr <- no_triangles[idx[y]]
           choice <- y
-          idxSameTr[y] <- idx[y]
+          idx_same_tr[y] <- idx[y]
         }
-        else if(maxTr == noTriangles[idx[y]]) {
-          idxSameTr[y] <- idx[y]
+        else if(max_tr == no_triangles[idx[y]]) {
+          idx_same_tr[y] <- idx[y]
         }
       }
 
       # Scelgo in base alla ratio maggiore, ovvero scelgo il nodo i cui vicini trovano
-      # maggiore corrispondenza nella lista di subprot
+      # maggiore corrispondenza nella lista di sub_prot
 
-      if(length(idxSameTr)>1) {
+      if(length(idx_same_tr)>1) {
 
-        #print("scelgo in base alla ratio ")
         remove(choice)
 
         choice <- -1
         r <- -1
 
-        for(t in 1:length(idxSameTr)) {
-          if(!is.na(idxSameTr[t])) {
-            maxNeigh <- neighbors(graph=G, v=CandGene[idxSameTr[t]])
-            maxNeigh <- as.character(maxNeigh$name)
-            ratio <- length(intersect(subprot, unique(maxNeigh)))/length(unique(maxNeigh))
+        for(t in 1:length(idx_same_tr)) {
+          if(!is.na(idx_same_tr[t])) {
+            max_neigh <- neighbors(graph=graph_from_df, v=cand_gene[idx_same_tr[t]])
+            max_neigh <- as.character(max_neigh$name)
+            ratio <- length(intersect(sub_prot, unique(max_neigh)))/length(unique(max_neigh))
 
             if(r<ratio) {
               r <- ratio
@@ -645,54 +642,47 @@ expand_seeds_refactor <- function(
       }
 
       #aggiorno le mie seed aggiungendo il nuovo gene
-      subprot[length(subprot)+1] <- CandGene[idx[choice]]
+      sub_prot[length(sub_prot)+1] <- cand_gene[idx[choice]]
 
       #aggiungo il gene alla lista dei connectors
-      connectors[length(connectors)+1] <- CandGene[idx[choice]]
-
-
-      #print(paste0("Candidate gene: ", CandGene[idx[choice]]))
-      # print(paste0("Rank: ", RankCand[idx[choice]]))
-      #print(paste0("LCC: ", LCC))
-
-      #print('-----------------------------')
+      connectors[length(connectors)+1] <- cand_gene[idx[choice]]
 
     }
-    if(cond1 | cond2) break
+    if(cond1 || cond2) break
     if(length(connectors)>1) {
-      resConn[[iter]] <- connectors
+      res_conn[[iter]] <- connectors
     }
     else {
       break
     }
 
     # Update the starting graph to extract the second biggest connected component
-    new_graph <- induced_subgraph(graph=G, vids=which(V(G)$name %in% subprot))
+    new_graph <- induced_subgraph(graph=graph_from_df, vids=which(V(graph_from_df)$name %in% sub_prot))
 
     cc <- components(graph=new_graph)
     cc_idx <- which(cc$csize==max(cc$csize))
     cc_names <- names(cc$membership[cc$membership==cc_idx])
 
-    if(all(subprot %in% cc_names)) {
+    if(all(sub_prot %in% cc_names)) {
       break
     }
 
-    firstCC <- subprot[subprot %in% cc_names]
-    resSub[[iter]] <- firstCC
-    nodes <- V(G)$name[V(G)$name %in% firstCC]####
+    first_cc <- sub_prot[sub_prot %in% cc_names]
+    res_sub[[iter]] <- first_cc
+    nodes <- V(graph_from_df)$name[V(graph_from_df)$name %in% first_cc]####
 
-    toRemove <- which(seedprot %in% firstCC)
-    seedprot <- seedprot[-toRemove]
-    subprot <- seedprot
+    to_remove <- which(seedprot %in% first_cc)
+    seedprot <- seedprot[-to_remove]
+    sub_prot <- seedprot
 
     iter <- iter+1
     remove(nodes)
-    remove(toRemove)
+    remove(to_remove)
   }
 
-  return(list(  "network_components"=resSub, "network_seeds"=res_prot))
+  return(list(  "network_components"=res_sub, "network_seeds"=res_prot))
 
-  # list of lists
+ # list of lists
 }
 
 
