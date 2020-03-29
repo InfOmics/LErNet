@@ -505,9 +505,9 @@ expand_seeds_refactor <- function(
   res_conn <- list()
   res_sub <- list()
   iter <- 1
-  cond1 <- FALSE
-  cond2 <- FALSE
-  isSCA <- FALSE
+  sub_net_components_invalid_csize <- FALSE
+  temp_components_invalid_csize <- FALSE
+  is_sca <- FALSE
 
   while(TRUE) {
     connectors <- vector("character", length=0)
@@ -536,17 +536,17 @@ expand_seeds_refactor <- function(
       keep_v <- which(V(graph_from_df)$name %in% sub_prot)
       sub_net <- induced_subgraph(graph=graph_from_df, vids=keep_v)
 
-      sub_comp <- components(graph=sub_net)
-      if(max(sub_comp$csize)<2) {
-        cond1 <- TRUE
+      sub_net_components <- components(graph=sub_net)
+      if( max(sub_net_components$csize) < 2) {
+        sub_net_components_invalid_csize <- TRUE
         break
       }
 
-      max_sub_comp <- which(sub_comp$csize==max(sub_comp$csize))###############[1]
+      max_sub_comp <- which(sub_net_components$csize==max(sub_net_components$csize))###############[1]
 
       LCC <- vector(mode="integer", length=length(max_sub_comp))
       for(c in 1:length(max_sub_comp)) {
-        H <- names(sub_comp$membership[sub_comp$membership==max_sub_comp[c] ])
+        H <- names(sub_net_components$membership[sub_net_components$membership==max_sub_comp[c] ])
         LCC[c] <- length(intersect(H, seedprot))
       }
       start_triangles <- length(triangles(sub_net))/3
@@ -559,26 +559,27 @@ expand_seeds_refactor <- function(
         }
         tmp_gene <- sub_prot
         tmp_gene[length(tmp_gene)+1] <- cand_gene[k]
-        tmp_net <- induced_subgraph(graph=graph_from_df, vids=which(V(graph_from_df)$name %in% tmp_gene))
 
-        comp <- components(graph=tmp_net)
-        if(max(comp$csize)<2) {
-          cond2 <- TRUE
-          #print("esci in comp?")
+        vertices_in_temp_net <- which(V(graph_from_df)$name %in% tmp_gene)
+        tmp_net <- induced_subgraph(graph=graph_from_df, vids= vertices_in_temp_net)
+
+        temp_net_components <- components(graph=tmp_net)
+        if( max(temp_net_components$csize) < 2) {
+          temp_components_invalid_csize <- TRUE
           break
         }
-        max_comp <- which(comp$csize==max(comp$csize))############################[1]
+        max_comp <- which(temp_net_components$csize==max(temp_net_components$csize))############################[1]
 
         LCC1 <- vector(mode="integer", length=length(max_comp))
         for(c1 in 1:length(max_comp)) {
-          H1 <- names(comp$membership[comp$membership==max_comp[c1] ])
+          H1 <- names(temp_net_components$membership[temp_net_components$membership==max_comp[c1] ])
           LCC1[c1] <- length(intersect(H1, seedprot))
         }
         rank_cand[k] <- max(LCC1)-max(LCC)
 
         triangles <- length(triangles(tmp_net))/3 #numero di triangoli totali nella TmpNet
 
-        if(isSCA) {
+        if(is_sca) {
           no_triangles[k] <- 0
         }
         else {
@@ -648,7 +649,7 @@ expand_seeds_refactor <- function(
       connectors[length(connectors)+1] <- cand_gene[idx[choice]]
 
     }
-    if(cond1 || cond2) break
+    if(sub_net_components_invalid_csize || temp_components_invalid_csize) break
     if(length(connectors)>1) {
       res_conn[[iter]] <- connectors
     }
