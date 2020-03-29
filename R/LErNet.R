@@ -529,8 +529,6 @@ expand_seeds_refactor <- function(
     remove(i)
     remove(j)
 
-    length(cand_gene)
-
     while(TRUE) {
 
       keep_v <- which(V(graph_from_df)$name %in% sub_prot)
@@ -550,10 +548,12 @@ expand_seeds_refactor <- function(
         LCC[c] <- length(intersect(H, seedprot))
       }
       start_triangles <- length(triangles(sub_net))/3
-      rank_cand <- vector(mode="numeric", length=length(cand_gene))
-      no_triangles <- vector(mode="numeric", length=length(cand_gene))
 
-      for(k in 1:length(cand_gene)) {
+      cand_gene_length <- length(cand_gene)
+      rank_cand <- vector(mode="numeric", length=cand_gene_length)
+      no_triangles <- vector(mode="numeric", length=cand_gene_length)
+
+      for(k in 1:cand_gene_length) {
         if(strict_connectors && !(cand_gene[k] %in% strict_proteins)) {
           next
         }
