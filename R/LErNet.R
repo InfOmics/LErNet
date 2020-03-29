@@ -459,6 +459,244 @@ expand_seeds <- function(
 }
 
 
+#' Expansion of the seed network
+#'
+#' Expands with connectors the network formed by seed proteins,
+#' that are the producs fo the genes int he genomic context,
+#' by the expasion algorithm.
+#' Connectors are neighbors of selected proteins in the input PPI network.
+#'
+#' @param genomic_context a two column data.fram produced by \code{\link[LErNet]{get_genomic_context}}
+#' @param ppi_network a two column data.frame representing PPI network edges (see also \code{\link[LErNet]{get_stringdb}} )
+#' @param ensp_to_ensg a two column data.frame for mapping proteins to their producer genes (see also \code{\link[LErNet]{get_stringdb}} )
+#' @param strict_proteins a list of proteins
+#' @param strict_connectors if \code{TRUE} connectors can onyl be choosen from the \code{strict_proteins} list
+#'
+#' @return a list
+#' \describe{
+#'   \item{network_components}{a list of connected components of the resultant expanded network. Each compoent is a list of proteins.}
+#'   \item{network_seeds}{list of seed proteins that have succefully been mapped to the PPI network.}
+#' }
+#'
+#' @examples
+#'
+#' @export
+expand_seeds_refactor <- function(
+  genomic_context,
+  ppi_network,
+  ensp_to_ensg,
+  strict_proteins,
+  strict_connectors=TRUE
+)
+{
+  # map seeds to ppi nodes
+  closest_gene <- genomic_context$partner_coding_gene
+  matching <- ensp_to_ensg[ensp_to_ensg$ensembl_gene_id %in% closest_gene, ]
+  res_prot <- matching$ensembl_peptide_id
+
+  strict_proteins <- strict_proteins[ strict_proteins != ""  ]
+
+  seedprot <- res_prot
+  subprot <- seedprot
+  ppi <- ppi_network
+
+  G <- graph_from_data_frame(d=ppi, directed=FALSE, vertices=NULL)
+
+  resConn <- list()
+  resSub <- list()
+  iter <- 1
+  cond1 <- FALSE
+  cond2 <- FALSE
+  isSCA <- FALSE
+
+  while(TRUE) {
+    connectors <- vector("character", length=0)
+    #print(paste0("***ITERATION ", iter))
+    c <- 1
+    CandGene <- vector(mode="character", length=length(subprot))
+    for(i in 1:length(subprot)) {
+      if(subprot[i] %in% V(G)$name) {
+        N <- neighbors(graph=G, v=subprot[i])
+        N <- as.character(N$name)
+        for(j in 1:length(N)) {
+          if((!(N[j] %in% CandGene)) && (!(N[j] %in% subprot)) && !is.na(N[j])) {
+            CandGene[c] <- N[j]
+            c <- c+1
+          }
+        }
+      }
+    }
+    remove(N)
+    remove(i)
+    remove(j)
+
+    length(CandGene)
+
+    while(TRUE) {
+
+      SubNet <- make_empty_graph(n=0, directed=FALSE)
+      keepV <- which(V(G)$name %in% subprot)
+      SubNet <- induced_subgraph(graph=G, vids=keepV)
+
+      subComp <- components(graph=SubNet)
+      if(max(subComp$csize)<2) {
+        cond1 <- TRUE
+        break
+      }
+
+      maxSubComp <- which(subComp$csize==max(subComp$csize))###############[1]
+
+      LCC <- vector(mode="integer", length=length(maxSubComp))
+      for(c in 1:length(maxSubComp)) {
+        H <- names(subComp$membership[subComp$membership==maxSubComp[c] ])
+        LCC[c] <- length(intersect(H, seedprot))
+      }
+      start_triangles <- length(triangles(SubNet))/3
+      RankCand <- vector(mode="numeric", length=length(CandGene))
+      noTriangles <- vector(mode="numeric", length=length(CandGene))
+
+      for(k in 1:length(CandGene)) {
+        if(strict_connectors && !(CandGene[k] %in% strict_proteins)) {
+          next
+        }
+        TmpGene <- subprot
+        TmpGene[length(TmpGene)+1] <- CandGene[k]
+        TmpNet <- induced_subgraph(graph=G, vids=which(V(G)$name %in% TmpGene))
+
+        comp <- components(graph=TmpNet)
+        if(max(comp$csize)<2) {
+          cond2 <- TRUE
+          #print("esci in comp?")
+          break
+        }
+        maxComp <- which(comp$csize==max(comp$csize))############################[1]
+
+        LCC1 <- vector(mode="integer", length=length(maxComp))
+        for(c1 in 1:length(maxComp)) {
+          H1 <- names(comp$membership[comp$membership==maxComp[c1] ])
+          LCC1[c1] <- length(intersect(H1, seedprot))
+        }
+        RankCand[k] <- max(LCC1)-max(LCC)
+
+        triangles <- length(triangles(TmpNet))/3 #numero di triangoli totali nella TmpNet
+
+        if(isSCA) {
+          noTriangles[k] <- 0
+        }
+        else {
+          noTriangles[k] <- triangles-start_triangles
+        }
+
+        remove(TmpGene)
+
+      }
+
+      # Get the IDs of CandGene that maximize the LCC value
+      idx <- which(RankCand==max(RankCand))
+      if(max(RankCand)==0) {
+        #print("esci al rank?")
+        break
+      }
+
+      # Massimizzo il numero di triangoli
+      choice <- -1 #quale idx scelgo
+      maxTr <- -1 #max numero di triangoli
+
+      if(length(idx)>1) {
+        #print("ho più massimi uguali")
+      }
+
+      idxSameTr <- c(rep(NA, length(idx)))
+
+      for(y in 1:length(idx)) {
+        if(maxTr<noTriangles[idx[y]]) {
+          maxTr <- noTriangles[idx[y]]
+          choice <- y
+          idxSameTr[y] <- idx[y]
+        }
+        else if(maxTr == noTriangles[idx[y]]) {
+          idxSameTr[y] <- idx[y]
+        }
+      }
+
+      # Scelgo in base alla ratio maggiore, ovvero scelgo il nodo i cui vicini trovano
+      # maggiore corrispondenza nella lista di subprot
+
+      if(length(idxSameTr)>1) {
+
+        #print("scelgo in base alla ratio ")
+        remove(choice)
+
+        choice <- -1
+        r <- -1
+
+        for(t in 1:length(idxSameTr)) {
+          if(!is.na(idxSameTr[t])) {
+            maxNeigh <- neighbors(graph=G, v=CandGene[idxSameTr[t]])
+            maxNeigh <- as.character(maxNeigh$name)
+            ratio <- length(intersect(subprot, unique(maxNeigh)))/length(unique(maxNeigh))
+
+            if(r<ratio) {
+              r <- ratio
+              choice <- t
+            }
+          }
+        }
+      }
+
+      #aggiorno le mie seed aggiungendo il nuovo gene
+      subprot[length(subprot)+1] <- CandGene[idx[choice]]
+
+      #aggiungo il gene alla lista dei connectors
+      connectors[length(connectors)+1] <- CandGene[idx[choice]]
+
+
+      #print(paste0("Candidate gene: ", CandGene[idx[choice]]))
+      # print(paste0("Rank: ", RankCand[idx[choice]]))
+      #print(paste0("LCC: ", LCC))
+
+      #print('-----------------------------')
+
+    }
+    if(cond1 | cond2) break
+    if(length(connectors)>1) {
+      resConn[[iter]] <- connectors
+    }
+    else {
+      break
+    }
+
+    # Update the starting graph to extract the second biggest connected component
+    new_graph <- induced_subgraph(graph=G, vids=which(V(G)$name %in% subprot))
+
+    cc <- components(graph=new_graph)
+    cc_idx <- which(cc$csize==max(cc$csize))
+    cc_names <- names(cc$membership[cc$membership==cc_idx])
+
+    if(all(subprot %in% cc_names)) {
+      break
+    }
+
+    firstCC <- subprot[subprot %in% cc_names]
+    resSub[[iter]] <- firstCC
+    nodes <- V(G)$name[V(G)$name %in% firstCC]####
+
+    toRemove <- which(seedprot %in% firstCC)
+    seedprot <- seedprot[-toRemove]
+    subprot <- seedprot
+
+    iter <- iter+1
+    remove(nodes)
+    remove(toRemove)
+  }
+
+  return(list(  "network_components"=resSub, "network_seeds"=res_prot))
+
+  # list of lists
+}
+
+
+
 #' Visualization of the expanded network
 #'
 #' Visualizes the expanded network,
