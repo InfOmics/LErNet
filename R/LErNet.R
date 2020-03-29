@@ -529,7 +529,7 @@ expand_seeds_refactor <- function(
     remove(i)
     remove(j)
 
-    length(cand_gene)
+    cand_gene_length <- length(cand_gene)
 
     while(TRUE) {
 
@@ -544,19 +544,24 @@ expand_seeds_refactor <- function(
 
       max_sub_comp <- which(sub_net_components$csize==max(sub_net_components$csize))###############[1]
 
-      LCC <- vector(mode="integer", length=length(max_sub_comp))
-      for(c in 1:length(max_sub_comp)) {
+      max_sub_comp_length <- length(max_sub_comp)
+      LCC <- vector(mode="integer", length= max_sub_comp_length)
+
+      for(c in 1:max_sub_comp_length) {
         H <- names(sub_net_components$membership[sub_net_components$membership==max_sub_comp[c] ])
         LCC[c] <- length(intersect(H, seedprot))
       }
-      start_triangles <- length(triangles(sub_net))/3
-      rank_cand <- vector(mode="numeric", length=length(cand_gene))
-      no_triangles <- vector(mode="numeric", length=length(cand_gene))
 
-      for(k in 1:length(cand_gene)) {
+      start_triangles <- length(triangles(sub_net))/3
+      rank_cand <- vector(mode="numeric", length=cand_gene_length)
+      no_triangles <- vector(mode="numeric", length=cand_gene_length)
+
+      k <- 1
+      while (k < cand_gene_length) {
         if(strict_connectors && !(cand_gene[k] %in% strict_proteins)) {
-          next
+          k <- k+1
         }
+        print ("k = " + k)
         tmp_gene <- sub_prot
         tmp_gene[length(tmp_gene)+1] <- cand_gene[k]
 
@@ -566,11 +571,12 @@ expand_seeds_refactor <- function(
         temp_net_components <- components(graph=tmp_net)
         if( max(temp_net_components$csize) < 2) {
           temp_components_invalid_csize <- TRUE
-          break
+          k <- cand_gene_length
         }
-        max_comp <- which(temp_net_components$csize==max(temp_net_components$csize))############################[1]
 
+        max_comp <- which(temp_net_components$csize==max(temp_net_components$csize))############################[1]
         LCC1 <- vector(mode="integer", length=length(max_comp))
+
         for(c1 in 1:length(max_comp)) {
           H1 <- names(temp_net_components$membership[temp_net_components$membership==max_comp[c1] ])
           LCC1[c1] <- length(intersect(H1, seedprot))
@@ -588,6 +594,7 @@ expand_seeds_refactor <- function(
 
         remove(tmp_gene)
 
+        k <- k+1
       }
 
       # Get the IDs of cand_gene that maximize the LCC value
