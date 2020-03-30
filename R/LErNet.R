@@ -554,39 +554,40 @@ expand_seeds_refactor <- function(
       no_triangles <- vector(mode="numeric", length=cand_gene_length)
 
       for(k in 1:cand_gene_length) {
-        if(strict_connectors && !(cand_gene[k] %in% strict_proteins)) {
-          next
+        if(!strict_connectors || (cand_gene[k] %in% strict_proteins)) {
+
+          tmp_gene <- sub_prot
+          tmp_gene[length(tmp_gene)+1] <- cand_gene[k]
+
+          vertices_in_temp_net <- which(V(graph_from_df)$name %in% tmp_gene)
+          tmp_net <- induced_subgraph(graph=graph_from_df, vids= vertices_in_temp_net)
+          temp_net_components <- components(graph=tmp_net)
+
+          if(max(temp_net_components$csize) < 2) {
+            temp_components_invalid_csize <- TRUE
+            break
+          }
+
+          max_comp <- which(temp_net_components$csize==max(temp_net_components$csize))
+
+          LCC1 <- vector(mode="integer", length=length(max_comp))
+          for(c1 in 1:length(max_comp)) {
+            H1 <- names(temp_net_components$membership[temp_net_components$membership==max_comp[c1] ])
+            LCC1[c1] <- length(intersect(H1, seedprot))
+          }
+          rank_cand[k] <- max(LCC1)-max(LCC)
+
+          tmp_net_tringles <- length(triangles(tmp_net))/3
+
+          if(is_sca) {
+            no_triangles[k] <- 0
+          }
+          else {
+            no_triangles[k] <- tmp_net_tringles - start_triangles
+          }
+
+          remove(tmp_gene)
         }
-        tmp_gene <- sub_prot
-        tmp_gene[length(tmp_gene)+1] <- cand_gene[k]
-
-        vertices_in_temp_net <- which(V(graph_from_df)$name %in% tmp_gene)
-        tmp_net <- induced_subgraph(graph=graph_from_df, vids= vertices_in_temp_net)
-
-        temp_net_components <- components(graph=tmp_net)
-        if( max(temp_net_components$csize) < 2) {
-          temp_components_invalid_csize <- TRUE
-          break
-        }
-        max_comp <- which(temp_net_components$csize==max(temp_net_components$csize))############################[1]
-
-        LCC1 <- vector(mode="integer", length=length(max_comp))
-        for(c1 in 1:length(max_comp)) {
-          H1 <- names(temp_net_components$membership[temp_net_components$membership==max_comp[c1] ])
-          LCC1[c1] <- length(intersect(H1, seedprot))
-        }
-        rank_cand[k] <- max(LCC1)-max(LCC)
-
-        triangles <- length(triangles(tmp_net))/3 #numero di triangoli totali nella TmpNet
-
-        if(is_sca) {
-          no_triangles[k] <- 0
-        }
-        else {
-          no_triangles[k] <- triangles-start_triangles
-        }
-
-        remove(tmp_gene)
 
       }
 
