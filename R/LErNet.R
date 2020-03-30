@@ -553,7 +553,8 @@ expand_seeds_refactor <- function(
       rank_cand <- vector(mode="numeric", length=cand_gene_length)
       no_triangles <- vector(mode="numeric", length=cand_gene_length)
 
-      for(k in 1:cand_gene_length) {
+      k <- 1
+      while (k <= cand_gene_length) {
         if(!strict_connectors || (cand_gene[k] %in% strict_proteins)) {
 
           tmp_gene <- sub_prot
@@ -565,7 +566,7 @@ expand_seeds_refactor <- function(
 
           if(max(temp_net_components$csize) < 2) {
             temp_components_invalid_csize <- TRUE
-            break
+            k <- cand_gene_length + 1
           }
 
           max_comp <- which(temp_net_components$csize==max(temp_net_components$csize))
@@ -588,7 +589,7 @@ expand_seeds_refactor <- function(
 
           remove(tmp_gene)
         }
-
+        k <- k + 1
       }
 
       # Get the IDs of cand_gene that maximize the LCC value
