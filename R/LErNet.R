@@ -601,10 +601,6 @@ expand_seeds_refactor <- function(
       choice <- -1 #quale idx scelgo
       max_tr <- -1 #max numero di triangoli
 
-      if(length(idx)>1) {
-        #print("ho più massimi uguali")
-      }
-
       idx_same_tr <- c(rep(NA, length(idx)))
 
       for(y in 1:length(idx)) {
