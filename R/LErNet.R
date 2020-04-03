@@ -571,11 +571,14 @@ expand_seeds_refactor <- function(
 
           max_comp <- which(temp_net_components$csize==max(temp_net_components$csize))
 
-          LCC1 <- vector(mode="integer", length=length(max_comp))
-          for(c1 in 1:length(max_comp)) {
+          max_comp_length <- length(max_comp)
+          LCC1 <- vector(mode="integer", length=max_comp_length)
+
+          for(c1 in 1:max_comp_length) {
             H1 <- names(temp_net_components$membership[temp_net_components$membership==max_comp[c1] ])
             LCC1[c1] <- length(intersect(H1, seedprot))
           }
+
           rank_cand[k] <- max(LCC1)-max(LCC)
 
           tmp_net_tringles <- length(triangles(tmp_net))/3
