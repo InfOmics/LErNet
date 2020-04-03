@@ -598,18 +598,19 @@ expand_seeds_refactor <- function(
       }
 
       # Massimizzo il numero di triangoli
-      choice <- -1 #quale idx scelgo
-      max_tr <- -1 #max numero di triangoli
+      chosen_idx <- -1
+      max_triangles_number <- -1
 
-      idx_same_tr <- c(rep(NA, length(idx)))
+      idx_length <- length(idx)
+      idx_same_tr <- c(rep(NA, idx_length))
 
-      for(y in 1:length(idx)) {
-        if(max_tr<no_triangles[idx[y]]) {
-          max_tr <- no_triangles[idx[y]]
-          choice <- y
+      for(y in 1:idx_length) {
+        if(max_triangles_number < no_triangles[idx[y]]) {
+          max_triangles_number <- no_triangles[idx[y]]
+          chosen_idx <- y
           idx_same_tr[y] <- idx[y]
         }
-        else if(max_tr == no_triangles[idx[y]]) {
+        else if(max_triangles_number == no_triangles[idx[y]]) {
           idx_same_tr[y] <- idx[y]
         }
       }
@@ -619,9 +620,9 @@ expand_seeds_refactor <- function(
 
       if(length(idx_same_tr)>1) {
 
-        remove(choice)
+        remove(chosen_idx)
 
-        choice <- -1
+        chosen_idx <- -1
         r <- -1
 
         for(t in 1:length(idx_same_tr)) {
@@ -632,17 +633,17 @@ expand_seeds_refactor <- function(
 
             if(r<ratio) {
               r <- ratio
-              choice <- t
+              chosen_idx <- t
             }
           }
         }
       }
 
       #aggiorno le mie seed aggiungendo il nuovo gene
-      sub_prot[length(sub_prot)+1] <- cand_gene[idx[choice]]
+      sub_prot[length(sub_prot)+1] <- cand_gene[idx[chosen_idx]]
 
       #aggiungo il gene alla lista dei connectors
-      connectors[length(connectors)+1] <- cand_gene[idx[choice]]
+      connectors[length(connectors)+1] <- cand_gene[idx[chosen_idx]]
 
     }
     if(sub_net_components_invalid_csize || temp_components_invalid_csize) break
