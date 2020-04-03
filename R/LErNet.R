@@ -507,7 +507,7 @@ expand_seeds_refactor <- function(
   iter <- 1
   sub_net_components_invalid_csize <- FALSE
   temp_components_invalid_csize <- FALSE
-  is_sca <- FALSE
+  # is_sca <- FALSE
 
   while(TRUE) {
     connectors <- vector("character", length=0)
@@ -583,12 +583,7 @@ expand_seeds_refactor <- function(
 
           tmp_net_tringles <- length(triangles(tmp_net))/3
 
-          if(is_sca) {
-            no_triangles[k] <- 0
-          }
-          else {
-            no_triangles[k] <- tmp_net_tringles - start_triangles
-          }
+          no_triangles[k] <- tmp_net_tringles - start_triangles
 
           remove(tmp_gene)
         }
