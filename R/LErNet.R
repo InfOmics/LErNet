@@ -507,6 +507,8 @@ expand_seeds_refactor <- function(
   iter <- 1
   sub_net_components_invalid_csize <- FALSE
   temp_components_invalid_csize <- FALSE
+  max_component_csize_valid <- TRUE
+  max_rank_cand_valid <- TRUE
   # is_sca <- FALSE
 
   while(TRUE) {
@@ -529,122 +531,125 @@ expand_seeds_refactor <- function(
     remove(i)
     remove(j)
 
-    while(TRUE) {
+    while(max_component_csize_valid && max_rank_cand_valid) {
 
       keep_v <- which(V(graph_from_df)$name %in% sub_prot)
       sub_net <- induced_subgraph(graph=graph_from_df, vids=keep_v)
 
       sub_net_components <- components(graph=sub_net)
-      if( max(sub_net_components$csize) < 2) {
+      max_component_cszie <- max(sub_net_components$csize)
+      if( max_component_cszie < 2) {
         sub_net_components_invalid_csize <- TRUE
-        break
+        max_component_csize_valid <- FALSE
       }
+      else {
 
-      max_sub_comp <- which(sub_net_components$csize==max(sub_net_components$csize))###############[1]
+        max_sub_comp <- which(sub_net_components$csize== max_component_cszie)
 
-      LCC <- vector(mode="integer", length=length(max_sub_comp))
-      for(c in 1:length(max_sub_comp)) {
-        H <- names(sub_net_components$membership[sub_net_components$membership==max_sub_comp[c] ])
-        LCC[c] <- length(intersect(H, seedprot))
-      }
-      start_triangles <- length(triangles(sub_net))/3
+        LCC <- vector(mode="integer", length=length(max_sub_comp))
+        for(c in 1:length(max_sub_comp)) {
+          H <- names(sub_net_components$membership[sub_net_components$membership==max_sub_comp[c] ])
+          LCC[c] <- length(intersect(H, seedprot))
+        }
+        start_triangles <- length(triangles(sub_net))/3
 
-      cand_gene_length <- length(cand_gene)
-      rank_cand <- vector(mode="numeric", length=cand_gene_length)
-      no_triangles <- vector(mode="numeric", length=cand_gene_length)
+        cand_gene_length <- length(cand_gene)
+        rank_cand <- vector(mode="numeric", length=cand_gene_length)
+        no_triangles <- vector(mode="numeric", length=cand_gene_length)
 
-      k <- 1
-      while (k <= cand_gene_length) {
-        if(!strict_connectors || (cand_gene[k] %in% strict_proteins)) {
+        k <- 1
+        while (k <= cand_gene_length) {
+          if(!strict_connectors || (cand_gene[k] %in% strict_proteins)) {
 
-          tmp_gene <- sub_prot
-          tmp_gene[length(tmp_gene)+1] <- cand_gene[k]
+            tmp_gene <- sub_prot
+            tmp_gene[length(tmp_gene)+1] <- cand_gene[k]
 
-          vertices_in_temp_net <- which(V(graph_from_df)$name %in% tmp_gene)
-          tmp_net <- induced_subgraph(graph=graph_from_df, vids= vertices_in_temp_net)
-          temp_net_components <- components(graph=tmp_net)
+            vertices_in_temp_net <- which(V(graph_from_df)$name %in% tmp_gene)
+            tmp_net <- induced_subgraph(graph=graph_from_df, vids= vertices_in_temp_net)
+            temp_net_components <- components(graph=tmp_net)
 
-          if(max(temp_net_components$csize) < 2) {
-            temp_components_invalid_csize <- TRUE
-            k <- cand_gene_length + 1
+            if(max(temp_net_components$csize) < 2) {
+              temp_components_invalid_csize <- TRUE
+              k <- cand_gene_length + 1
+            }
+
+            max_comp <- which(temp_net_components$csize==max(temp_net_components$csize))
+
+            max_comp_length <- length(max_comp)
+            LCC1 <- vector(mode="integer", length=max_comp_length)
+
+            for(c1 in 1:max_comp_length) {
+              H1 <- names(temp_net_components$membership[temp_net_components$membership==max_comp[c1] ])
+              LCC1[c1] <- length(intersect(H1, seedprot))
+            }
+
+            rank_cand[k] <- max(LCC1)-max(LCC)
+
+            tmp_net_tringles <- length(triangles(tmp_net))/3
+
+            no_triangles[k] <- tmp_net_tringles - start_triangles
+
+            remove(tmp_gene)
           }
-
-          max_comp <- which(temp_net_components$csize==max(temp_net_components$csize))
-
-          max_comp_length <- length(max_comp)
-          LCC1 <- vector(mode="integer", length=max_comp_length)
-
-          for(c1 in 1:max_comp_length) {
-            H1 <- names(temp_net_components$membership[temp_net_components$membership==max_comp[c1] ])
-            LCC1[c1] <- length(intersect(H1, seedprot))
-          }
-
-          rank_cand[k] <- max(LCC1)-max(LCC)
-
-          tmp_net_tringles <- length(triangles(tmp_net))/3
-
-          no_triangles[k] <- tmp_net_tringles - start_triangles
-
-          remove(tmp_gene)
+          k <- k + 1
         }
-        k <- k + 1
-      }
 
-      # Get the IDs of cand_gene that maximize the LCC value
-      idx <- which(rank_cand==max(rank_cand))
-      if(max(rank_cand)==0) {
-        #print("esci al rank?")
-        break
-      }
-
-      # Massimizzo il numero di triangoli
-      chosen_idx <- -1
-      max_triangles_number <- -1
-
-      idx_length <- length(idx)
-      idx_same_tr <- c(rep(NA, idx_length))
-
-      for(y in 1:idx_length) {
-        if(max_triangles_number < no_triangles[idx[y]]) {
-          max_triangles_number <- no_triangles[idx[y]]
-          chosen_idx <- y
-          idx_same_tr[y] <- idx[y]
+        # Get the IDs of cand_gene that maximize the LCC value
+        max_rank_cand <- max(rank_cand)
+        idx <- which(rank_cand==max_rank_cand)
+        if(max_rank_cand == 0) {
+          max_rank_cand_valid <- FALSE
         }
-        else if(max_triangles_number == no_triangles[idx[y]]) {
-          idx_same_tr[y] <- idx[y]
-        }
-      }
+        else {
+          # Massimizzo il numero di triangoli
+          chosen_idx <- -1
+          max_triangles_number <- -1
 
-      # Scelgo in base alla ratio maggiore, ovvero scelgo il nodo i cui vicini trovano
-      # maggiore corrispondenza nella lista di sub_prot
+          idx_length <- length(idx)
+          idx_same_tr <- c(rep(NA, idx_length))
 
-      if(length(idx_same_tr)>1) {
-
-        remove(chosen_idx)
-
-        chosen_idx <- -1
-        r <- -1
-
-        for(t in 1:length(idx_same_tr)) {
-          if(!is.na(idx_same_tr[t])) {
-            max_neigh <- neighbors(graph=graph_from_df, v=cand_gene[idx_same_tr[t]])
-            max_neigh <- as.character(max_neigh$name)
-            ratio <- length(intersect(sub_prot, unique(max_neigh)))/length(unique(max_neigh))
-
-            if(r<ratio) {
-              r <- ratio
-              chosen_idx <- t
+          for(y in 1:idx_length) {
+            if(max_triangles_number < no_triangles[idx[y]]) {
+              max_triangles_number <- no_triangles[idx[y]]
+              chosen_idx <- y
+              idx_same_tr[y] <- idx[y]
+            }
+            else if(max_triangles_number == no_triangles[idx[y]]) {
+              idx_same_tr[y] <- idx[y]
             }
           }
+
+          # Scelgo in base alla ratio maggiore, ovvero scelgo il nodo i cui vicini trovano
+          # maggiore corrispondenza nella lista di sub_prot
+
+          if(length(idx_same_tr)>1) {
+
+            remove(chosen_idx)
+
+            chosen_idx <- -1
+            r <- -1
+
+            for(t in 1:length(idx_same_tr)) {
+              if(!is.na(idx_same_tr[t])) {
+                max_neigh <- neighbors(graph=graph_from_df, v=cand_gene[idx_same_tr[t]])
+                max_neigh <- as.character(max_neigh$name)
+                ratio <- length(intersect(sub_prot, unique(max_neigh)))/length(unique(max_neigh))
+
+                if(r<ratio) {
+                  r <- ratio
+                  chosen_idx <- t
+                }
+              }
+            }
+          }
+
+          #aggiorno le mie seed aggiungendo il nuovo gene
+          sub_prot[length(sub_prot)+1] <- cand_gene[idx[chosen_idx]]
+
+          #aggiungo il gene alla lista dei connectors
+          connectors[length(connectors)+1] <- cand_gene[idx[chosen_idx]]
         }
       }
-
-      #aggiorno le mie seed aggiungendo il nuovo gene
-      sub_prot[length(sub_prot)+1] <- cand_gene[idx[chosen_idx]]
-
-      #aggiungo il gene alla lista dei connectors
-      connectors[length(connectors)+1] <- cand_gene[idx[chosen_idx]]
-
     }
     if(sub_net_components_invalid_csize || temp_components_invalid_csize) break
     if(length(connectors)>1) {
