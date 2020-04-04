@@ -459,6 +459,14 @@ expand_seeds <- function(
 }
 
 
+longest_connected_component <- function(comps, max_comps_csize, intersection_seed) {
+  max_sub_comp <- which(comps$csize == max_comps_csize)
+  longest_connected_component <- vector(mode = "integer", length = length(max_sub_comp))
+  H <- names(comps$membership[which(comps$membership == max_sub_comp)])
+  longest_connected_component[] <- length(intersect(H, intersection_seed))
+}
+
+
 #' Expansion of the seed network
 #'
 #' Expands with connectors the network formed by seed proteins,
@@ -509,7 +517,6 @@ expand_seeds_refactor <- function(
   temp_components_invalid_csize <- FALSE
   max_component_csize_valid <- TRUE
   max_rank_cand_valid <- TRUE
-  # is_sca <- FALSE
 
   while(TRUE) {
     connectors <- vector("character", length=0)
@@ -537,20 +544,15 @@ expand_seeds_refactor <- function(
       sub_net <- induced_subgraph(graph=graph_from_df, vids=keep_v)
 
       sub_net_components <- components(graph=sub_net)
-      max_component_cszie <- max(sub_net_components$csize)
-      if( max_component_cszie < 2) {
+      max_component_csize <- max(sub_net_components$csize)
+      if( max_component_csize < 2) {
         sub_net_components_invalid_csize <- TRUE
         max_component_csize_valid <- FALSE
       }
       else {
 
-        max_sub_comp <- which(sub_net_components$csize== max_component_cszie)
+         LCC <- longest_connected_component(sub_net_components, max_component_csize, seedprot)
 
-        LCC <- vector(mode="integer", length=length(max_sub_comp))
-        for(c in 1:length(max_sub_comp)) {
-          H <- names(sub_net_components$membership[sub_net_components$membership==max_sub_comp[c] ])
-          LCC[c] <- length(intersect(H, seedprot))
-        }
         start_triangles <- length(triangles(sub_net))/3
 
         cand_gene_length <- length(cand_gene)
@@ -568,24 +570,17 @@ expand_seeds_refactor <- function(
             tmp_net <- induced_subgraph(graph=graph_from_df, vids= vertices_in_temp_net)
             temp_net_components <- components(graph=tmp_net)
 
-            if(max(temp_net_components$csize) < 2) {
+            max_temp_net_component_csize <- max(temp_net_components$csize)
+            if(max_temp_net_component_csize < 2) {
               temp_components_invalid_csize <- TRUE
               k <- cand_gene_length + 1
             }
 
-            max_comp <- which(temp_net_components$csize==max(temp_net_components$csize))
+            LCC1 <- longest_connected_component(temp_net_components, max_temp_net_component_csize, seedprot)
 
-            max_comp_length <- length(max_comp)
-            LCC1 <- vector(mode="integer", length=max_comp_length)
+            rank_cand[k] <- max(LCC1) - max(LCC)
 
-            for(c1 in 1:max_comp_length) {
-              H1 <- names(temp_net_components$membership[temp_net_components$membership==max_comp[c1] ])
-              LCC1[c1] <- length(intersect(H1, seedprot))
-            }
-
-            rank_cand[k] <- max(LCC1)-max(LCC)
-
-            tmp_net_tringles <- length(triangles(tmp_net))/3
+            tmp_net_tringles <- length(triangles(tmp_net)) / 3
 
             no_triangles[k] <- tmp_net_tringles - start_triangles
 
