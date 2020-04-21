@@ -22,7 +22,7 @@ If you have used the package LErNet in your project, please cite the following p
 <hr />
 
 ## Installation
-
+Before to install the *LErNet* package, youneed to install the STRINGdb and ReactomePA R packages.
 ```R
 # if you have not installed "devtools" package
 install.packages("devtools")
