@@ -162,7 +162,7 @@ The function `expand_seeds` returns a list containing a dataframe with the netwo
 
 ```R
 network_components <- ret[["network_components"]]
-input_proteins <- ret[["input_proteins"]]
+#input_proteins <- ret[["input_proteins"]]
 network_seeds <- ret[["network_seeds"]]
 ```
 
@@ -173,7 +173,8 @@ LErNet::visualize(
   lncgenes = lncrnaAll,
   genomic_context = genomic_context,
   ensp_to_ensg = ensp_to_ensg,
-  input_proteins = input_proteins,
+  #input_proteins = input_proteins,
+  input_proteins = strict_proteins,
   network_seeds = network_seeds,
   ppi_network = ppi_network,
   expanded_elements = unlist(network_components) ,
