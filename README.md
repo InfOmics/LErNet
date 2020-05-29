@@ -188,6 +188,12 @@ The last step is the functional enrichment of the results. Basically *LErNet* ex
 
 ```R
 BiocManager::install("org.Mm.eg.db")
+library(org.Mm.eg.db)
+
+# for human
+# BiocManager::install("org.Hs.eg.db")
+# library(org.Hs.eg.db)
+
 
 enrichment <- LErNet::enrich(  ens_proteins = unlist(network_components),  organism = "mouse",  mart = mart)
 # LErNet::enrich(  ens_proteins = unlist(network_components),  organism = "mouse",  mart = mart, max_to_show =2)
