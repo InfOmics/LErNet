@@ -187,6 +187,8 @@ LErNet::visualize(
 The last step is the functional enrichment of the results. Basically *LErNet* exploits the package ReactomePA to retrieve significant pathways through the function `enrich`: 
 
 ```R
+library(ReactomePA)
+
 BiocManager::install("org.Mm.eg.db")
 library(org.Mm.eg.db)
 
