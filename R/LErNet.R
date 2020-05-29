@@ -569,7 +569,7 @@ visualize <-function(
         }
       }
     }
-    nodes$label<-label$mgi_symbol
+    nodes$label<-label[,mart_symbol_column]
   }
   font.size<-c(50)
   nodes$font.size<-font.size
