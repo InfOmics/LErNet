@@ -4,9 +4,17 @@
 \alias{visualize}
 \title{Visualization of the expanded network}
 \usage{
-visualize(lncgenes, genomic_context, ensp_to_ensg, input_proteins,
-  network_seeds, ppi_network, expanded_elements, mart,
-  mart_symbol_column = NULL)
+visualize(
+  lncgenes,
+  genomic_context,
+  ensp_to_ensg,
+  input_proteins,
+  network_seeds,
+  ppi_network,
+  expanded_elements,
+  mart,
+  mart_symbol_column = NULL
+)
 }
 \arguments{
 \item{lncgenes}{a list of lncRNA genes}

@@ -4,7 +4,7 @@
 \alias{enrich}
 \title{Functional enrichment}
 \usage{
-enrich(ens_proteins, organism, mart, max_to_show = NULL)
+enrich(ens_proteins, organism, mart)
 }
 \arguments{
 \item{ens_proteins}{list of proteins, in Ensembl format, for which to compute the enrichment}
@@ -18,7 +18,6 @@ a ReactomePA result object.
 }
 \description{
 Computes functional enrichment of a given set of proteins via the ReactomePA package.
-A bar plot reporting the enriched pathway and their p-values is shown.
 }
 \examples{
 

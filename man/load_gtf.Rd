@@ -2,7 +2,7 @@
 % Please edit documentation in R/LErNet.R
 \name{load_gtf}
 \alias{load_gtf}
-\title{Creation of a choordinates data.frame from a GTF file}
+\title{Creation of a coordinates data.frame from a GTF file}
 \usage{
 load_gtf(gtf_file)
 }
@@ -13,12 +13,12 @@ load_gtf(gtf_file)
 a data.frame with columns: \code{id type seqname start end}
 }
 \description{
-Creates the choordinates data.frame by reading the data from a GTF file
+Creates the coordinates data.frame by reading the data from a GTF file
 having 9 columns (whihc is the typical format of GTF files from GENCODE).
 }
 \examples{
 library(LErNet)
 gtf_file <- system.file("extdata", "gencode.vM20.chr_patch_hapl_scaff.annotation.gtf.gz", package = "LErNet")
-complete_positions <- LErNet.load_gtf(gtf_file)
+complete_positions <- LErNet::load_gtf(gtf_file)
 
 }

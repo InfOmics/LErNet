@@ -102,3 +102,33 @@ get_stringdb <- function(
   print(class(string_genes))
   return( list( "ppi_network" = ppi, "ensp_to_ensg" = string_genes) )
 }
+
+
+
+#' Mapping from Ensembl to Entrez
+#'
+#' Maps a list of protein IDs in the Ensmbl format to the Entrez naming system
+#'
+#' @param ens_proteins list of Ensembl IDs
+#' @paramt mart a biomaRt object for the given species
+#'
+#' @return a data.frame representing the mapping
+#'
+#' @export
+enps_to_entrez <-function(
+  ens_proteins,
+  mart
+)
+{
+  #tryCatch(
+  #  {mseeds <- getBM(attributes = c("ensembl_peptide_id","ensembl_gene_id","entrezgene"),
+  #                filters = "ensembl_peptide_id", values = ens_proteins, mart = mart)},
+  #  error= function(err){
+  mseeds <- getBM(attributes = c("ensembl_peptide_id","ensembl_gene_id","entrezgene_id"),
+                  filters = "ensembl_peptide_id", values = ens_proteins, mart = mart)
+  #   }
+  #)
+  #mseeds <- getBM(attributes = c("ensembl_peptide_id","ensembl_gene_id","entrezgene"),
+  #                filters = "ensembl_peptide_id", values = ens_proteins, mart = mart)
+  return(mseeds)
+}

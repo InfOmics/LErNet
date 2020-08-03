@@ -4,8 +4,13 @@
 \alias{expand_seeds}
 \title{Expansion of the seed network}
 \usage{
-expand_seeds(genomic_context, ppi_network, ensp_to_ensg, strict_proteins,
-  strict_connectors = TRUE)
+expand_seeds(
+  genomic_context,
+  ppi_network,
+  ensp_to_ensg,
+  strict_proteins,
+  strict_connectors = TRUE
+)
 }
 \arguments{
 \item{genomic_context}{a two column data.fram produced by \code{\link[LErNet]{get_genomic_context}}}

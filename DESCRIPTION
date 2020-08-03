@@ -1,7 +1,7 @@
 Package: LErNet
 Type: Package
 Title: LErNet: characterization of lncRNAs via context-aware network expansion and enrichment analysis
-Version: 0.1.0
+Version: 0.1.1
 Author: Vincenzo Bonnici, Simone Caligola, Giulia Fiorini, Luca Giudice, Rosalba Giugno
 Maintainer: Vincenzo Bonnici <vincenzo.bonnici@univr.it>
 Description: Long non-coding RNAs (lncRNA) have recently acquired a boost of interest 
@@ -16,7 +16,7 @@ Description: Long non-coding RNAs (lncRNA) have recently acquired a boost of int
     the system level. The pipeline is particularly useful in 
     situations where the functions of discovered lncRNAs are 
     not yet known.
-License: MIT
+License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Imports:
@@ -29,8 +29,7 @@ Imports:
     ReactomePA
 Suggests:
     R.utils,
-    xlsx,
     knitr,
     rmarkdown
-RoxygenNote: 6.1.1
+RoxygenNote: 7.1.1
 VignetteBuilder: knitr

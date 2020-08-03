@@ -2,7 +2,7 @@
 % Please edit documentation in R/LErNet.R
 \name{get_stringdb}
 \alias{get_stringdb}
-\title{Retrieving of infomraiton fron the STRING database}
+\title{Retrieving of information from the STRING database}
 \usage{
 get_stringdb(stringdb_tax = 9606, stringdb_thr = 900, mart)
 }
@@ -21,8 +21,8 @@ a list
 }
 }
 \description{
-Retrieves the PPI network formt he STRING database via the STRINGdb.
-STRINGdb often onyl associates a primary product to a gene,
+Retrieves the PPI network form the STRING database via the STRINGdb.
+STRINGdb often only associates a primary product to a gene,
 thus other products are not reported.
 The function also returns the proteins associated to each gene within the STRING database.
 }
@@ -31,7 +31,7 @@ library(biomaRt)
 stringdb_tax = 9606
 stringdb_thr = 900
 mart = useMart(biomart = "ensembl", dataset = "hsapiens_gene_ensembl")
-ret <- LErNet.get_stringdb( stringdb_tax = stringdb_tax, stringdb_thr = stringdb_thr, mart = mart)
+ret <- LErNet::get_stringdb( stringdb_tax = stringdb_tax, stringdb_thr = stringdb_thr, mart = mart)
 ppi_network <- ret[["ppi_network"]]
 ensp_to_ensg <- ret[["ensp_to_ensg"]]
 

@@ -22,15 +22,29 @@ If you have used the package LErNet in your project, please cite the following p
 <hr />
 
 ## Installation
-Before to install the *LErNet* package, you need to install the STRINGdb and ReactomePA R packages.
+Before to install the *LErNet* packagemkae sure that all the required packages are already installed on your computer.
 ```R
 # if you have not installed "devtools" package
-install.packages("devtools")
-library(devtools)
+BiocManager::install("GenomicRanges")
+BiocManager::install("GenomicFeatures")
+BiocManager::install("STRINGdb")
+BiocManager::install("biomaRt")
+BiocManager::install("ReactomePA")
+install.packages("visNetwork")
+install.packages("BiocManager")
+install.packages("igraph")
 
-install_github("InfOmics/LErNet")
+
+install.packages("R.utils")
+install.packages("rmarkdown")
+
+
 ```
 
+Then, you can install the *LErNet* package.
+```R
+install_github("InfOmics/LErNet")
+```
 <hr />
 
 ## Running example
@@ -41,7 +55,6 @@ It's necessary to install and load the following libraries to run the example:
 
 ```R
 library(R.utils)
-library(xlsx)
 library(biomaRt)
 
 ```
@@ -49,14 +62,14 @@ The first step of the analysis is to retrieve a set of genes and lncRNAs of inte
  
 
 ```R
-lncrna_file <- system.file("extdata", "41598_2018_30359_MOESM2_ESM.xlsx", package = "LErNet")
-pcrna_file <- system.file("extdata", "41598_2018_30359_MOESM3_ESM.xlsx", package = "LErNet")
+lncrna_file <- system.file("extdata", "41598_2018_30359_MOESM2_ESM.csv", package = "LErNet")
+pcrna_file <- system.file("extdata", "41598_2018_30359_MOESM3_ESM.csv", package = "LErNet")
 gtf_file <- system.file("extdata", "gencode.vM20.chr_patch_hapl_scaff.annotation.gtf.gz", package = "LErNet")
 
-pcgenes<-read.xlsx(pcrna_file,sheetIndex = 1)
+pcgenes<-read.csv(pcrna_file)
 pcgenes<-as.character(pcgenes$gene_id)
 
-lncrnaInfo<-read.xlsx(lncrna_file, sheetIndex = 1)
+lncrnaInfo<-read.csv(lncrna_file)
 lncrnaInfo <- data.frame(lapply(lncrnaInfo, as.character), stringsAsFactors=FALSE)
 last<-which(lncrnaInfo$significant == 'FALSE')[1]
 lncrnaInfo<-lncrnaInfo[1:last-1,]

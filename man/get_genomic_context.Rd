@@ -4,8 +4,13 @@
 \alias{get_genomic_context}
 \title{Extraction fo the genomic context}
 \usage{
-get_genomic_context(positions, lncgenes, pcgenes, max_window = 1e+05,
-  strict_genomics = TRUE)
+get_genomic_context(
+  positions,
+  lncgenes,
+  pcgenes,
+  max_window = 1e+05,
+  strict_genomics = TRUE
+)
 }
 \arguments{
 \item{lncgenes}{a list of lncRNA genes}
@@ -28,28 +33,27 @@ that resides within a given range.
 }
 \examples{
 library(R.utils)
-library(xlsx)
-lncrna_file <- system.file("extdata", "41598_2018_30359_MOESM2_ESM.xlsx", package = "LErNet")
-pcrna_file <- system.file("extdata", "41598_2018_30359_MOESM3_ESM.xlsx", package = "LErNet")
+library(GenomicRanges)
+lncrna_file <- system.file("extdata", "41598_2018_30359_MOESM2_ESM.csv", package = "LErNet")
+pcrna_file <- system.file("extdata", "41598_2018_30359_MOESM3_ESM.csv", package = "LErNet")
 gtf_file <- system.file("extdata", "gencode.vM20.chr_patch_hapl_scaff.annotation.gtf.gz", package = "LErNet")
-pcgenes<-read.xlsx(pcrna_file,sheetIndex = 1)
+pcgenes<-read.csv(pcrna_file)
 pcgenes<-as.character(pcgenes$gene_id)
-lncrnaInfo<-read.xlsx(lncrna_file, sheetIndex = 1)
+lncrnaInfo<-read.csv(lncrna_file)
 lncrnaInfo <- data.frame(lapply(lncrnaInfo, as.character), stringsAsFactors=FALSE)
 last<-which(lncrnaInfo$significant == 'FALSE')[1]
 lncrnaInfo<-lncrnaInfo[1:last-1,]
 lncrnaAll<-as.character(lncrnaInfo$gene_id)
-complete_positions <- LErNet.load_gtf(gtf_file)
+complete_positions <- LErNet::load_gtf(gtf_file)
 novel<-lncrnaInfo
 novel<-novel[novel$isoform_status == "lncRNA_Novel", ]
 chrs <- paste0("chr",sapply(strsplit(sapply(strsplit( novel$locus, "-"), `[`, 1), ":"), `[`, 1))
 starts <- sapply(strsplit(sapply(strsplit(novel$locus, "-"), `[`, 1), ":"), `[`, 2)
 ends <- sapply(strsplit(novel$locus, "-"), `[`, 2)
-novel_gtf <- data.frame( "id" = novel$gene_id, "type" = rep('novel lncRNA', times = nrow(novel)),
-"seqname" = chrs, "start" = starts, "end" = ends )
+novel_gtf <- data.frame( "id" = novel$gene_id, "type" = rep('novel lncRNA', times = nrow(novel)), "seqname" = chrs, "start" = starts, "end" = ends )
 complete_positions <- rbind(complete_positions, novel_gtf)
 rownames(complete_positions) <- seq(1:nrow(complete_positions))
 
-genomic_context <- LErNet.get_genomic_context(positions = complete_positions, lncgenes = lncrnaAll, pcgenes = pcgenes, max_window = 100000, strict_genomics = TRUE)
+genomic_context <- LErNet::get_genomic_context(positions = complete_positions, lncgenes = lncrnaAll, pcgenes = pcgenes, max_window = 100000, strict_genomics = TRUE)
 
 }
