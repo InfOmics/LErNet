@@ -7,10 +7,6 @@
 #'
 #' @return a data.frame with columns: \code{id type seqname start end}
 #'
-#' @examples
-#' library(LErNet)
-#' gtf_file <- system.file("extdata", "gencode.vM20.chr_patch_hapl_scaff.annotation.gtf.gz", package = "LErNet")
-#' complete_positions <- LErNet::load_gtf(gtf_file)
 #'
 #' @export
 load_gtf <- function(
@@ -42,8 +38,6 @@ load_gtf <- function(
   return(complete_positions)
 }
 
-
-
 #' Retrieving of information from the STRING database
 #'
 #' Retrieves the PPI network form the STRING database via the STRINGdb.
@@ -53,28 +47,19 @@ load_gtf <- function(
 #'
 #' @param stringdb_tax taxa of the species
 #' @param stringdb_thr threshold to be applied to the score on the edges of the PPI
-#' @param mart a biomaRt object for mapping proteins to producer genes (Ensembl IDs).
 #'
 #' @return a list
 #' \describe{
-#'   \item{\code{ppi_network}}{a two columns data.frame representing the PPI network by listing its edges.}
-#'   \item{\code{ensp_to_ensg}}{a two columns data.frame reporting for each protein the corresponding gene (Ensembl IDs)}
+#'   \item{\code{ppi}}{a two columns data.frame representing the PPI network by listing its edges.}
 #' }
 #'
 #' @examples
-#' library(biomaRt)
-#' stringdb_tax = 9606
-#' stringdb_thr = 900
-#' mart = useMart(biomart = "ensembl", dataset = "hsapiens_gene_ensembl")
-#' ret <- LErNet::get_stringdb( stringdb_tax = stringdb_tax, stringdb_thr = stringdb_thr, mart = mart)
-#' ppi_network <- ret[["ppi_network"]]
-#' ensp_to_ensg <- ret[["ensp_to_ensg"]]
 #'
 #' @export
+
 get_stringdb <- function(
   stringdb_tax = 9606,
-  stringdb_thr = 900,
-  mart
+  stringdb_thr = 900
 )
 {
   ss<-STRINGdb$new( version="11", species=stringdb_tax, score_threshold=stringdb_thr)
@@ -94,13 +79,7 @@ get_stringdb <- function(
   ppi<-ppi[with(ppi, order(ppi$protein1, ppi$protein2)),]
   ppi<-ppi[!duplicated(ppi),]
 
-  #return complete_ensg_to_ensp, # dataframe  ENSP (stringdb) -> ENSG
-  string_prot<-unique(union(ppi$protein1, ppi$protein2))
-  string_genes<-getBM(attributes = c("ensembl_peptide_id", "ensembl_gene_id"),
-                      filters = "ensembl_peptide_id", values = string_prot, mart = mart)
-
-  print(class(string_genes))
-  return( list( "ppi_network" = ppi, "ensp_to_ensg" = string_genes) )
+  return( ppi )
 }
 
 
@@ -132,3 +111,5 @@ enps_to_entrez <-function(
   #                filters = "ensembl_peptide_id", values = ens_proteins, mart = mart)
   return(mseeds)
 }
+
+

@@ -4,52 +4,25 @@
 #library(igraph)
 
 
-#' Extraction fo the genomic context
+#' Extraction of the genomic context
 #'
 #' Retrieves the genomic context of input lncRNAs.
 #' The genomic context is defined as the set of protin coding genes
 #' that resides within a given range.
 #'
-#' @param poitions a data.frame reporting gemoic positions. Columns are \code{id type seqname start end}. It may contain features nto lited in \code{lncgenes} and \code{pcgenes}
+#' @param positions a data.frame reporting genomic positions. Columns are \code{id type seqname start end}. It may contain features into listed in \code{lncgenes} and \code{pcgenes}
 #' @param lncgenes a list of lncRNA genes
-#' @param pngenes a list of protein-coding genes that are of interest for the study.
+#' @param pcgenes a list of protein-coding genes that are of interest for the study. If empty, the complete set of neighbors is extracted otherwise only pcgenes in this set are taken into account.
 #' @param max_window the maximum size of the genomic range
-#' @param stricg_genomics if \code{FALSE}, it allows the genomic context to be forme dby p.c. genes in the \code{pcgenes} list.
 #'
 #' @return a two column data.frame reporting neighborhood information. The first column gives lncRNAs and the second column gives their associated neighbors.
-#'
 #' @examples
-#' library(R.utils)
-#' library(GenomicRanges)
-#' lncrna_file <- system.file("extdata", "41598_2018_30359_MOESM2_ESM.csv", package = "LErNet")
-#' pcrna_file <- system.file("extdata", "41598_2018_30359_MOESM3_ESM.csv", package = "LErNet")
-#' gtf_file <- system.file("extdata", "gencode.vM20.chr_patch_hapl_scaff.annotation.gtf.gz", package = "LErNet")
-#' pcgenes<-read.csv(pcrna_file)
-#' pcgenes<-as.character(pcgenes$gene_id)
-#' lncrnaInfo<-read.csv(lncrna_file)
-#' lncrnaInfo <- data.frame(lapply(lncrnaInfo, as.character), stringsAsFactors=FALSE)
-#' last<-which(lncrnaInfo$significant == 'FALSE')[1]
-#' lncrnaInfo<-lncrnaInfo[1:last-1,]
-#' lncrnaAll<-as.character(lncrnaInfo$gene_id)
-#' complete_positions <- LErNet::load_gtf(gtf_file)
-#' novel<-lncrnaInfo
-#' novel<-novel[novel$isoform_status == "lncRNA_Novel", ]
-#' chrs <- paste0("chr",sapply(strsplit(sapply(strsplit( novel$locus, "-"), `[`, 1), ":"), `[`, 1))
-#' starts <- sapply(strsplit(sapply(strsplit(novel$locus, "-"), `[`, 1), ":"), `[`, 2)
-#' ends <- sapply(strsplit(novel$locus, "-"), `[`, 2)
-#' novel_gtf <- data.frame( "id" = novel$gene_id, "type" = rep('novel lncRNA', times = nrow(novel)), "seqname" = chrs, "start" = starts, "end" = ends )
-#' complete_positions <- rbind(complete_positions, novel_gtf)
-#' rownames(complete_positions) <- seq(1:nrow(complete_positions))
-#'
-#' genomic_context <- LErNet::get_genomic_context(positions = complete_positions, lncgenes = lncrnaAll, pcgenes = pcgenes, max_window = 100000, strict_genomics = TRUE)
-#'
 #' @export
 get_genomic_context <- function(
   positions,
   lncgenes,
-  pcgenes,
-  max_window = 100000,
-  strict_genomics = TRUE
+  pcgenes = NULL,
+  max_window = 100000
 )
 {
   # return data.frame  lnc ensg -> neighbor ensg
@@ -62,7 +35,7 @@ get_genomic_context <- function(
     start = as.numeric(positions$start[idx])
     end = as.numeric(positions$end[idx])
     tmp<-coding_gtf[which(coding_gtf$seqname == chr),]
-    if(strict_genomics) {
+    if(!is.null(pcgenes)) {
       # Only DE-neighbors (protein coding)
       gid_tmp<-which(tmp$id %in% pcgenes)
       if(length(gid_tmp)<1) {
@@ -104,252 +77,234 @@ get_genomic_context <- function(
   return(closest)
 }
 
+#' Extraction of the connected components of the network
+#'
+#' @param net a data.frame reporting the edges of the network
+#'
+#' @return components a list of all connected proteins
+#'
+#' @examples
+#'
+#' @export
+get_connected_components <- function(
+  net
+){
+  components <- list()
+
+  tovisit = unique(union(net$protein1, net$protein2))
+  #print(tovisit)
+
+  icomponent <- 1
+  while( length(tovisit) > 0){
+    components[[icomponent]] <- c(tovisit[1])
+    tovisit <- tovisit[-1]
+
+    iqueue <- 1
+    while( iqueue <= length(components[[icomponent]]) ){
+      node <- components[[icomponent]][iqueue]
+      neighs <- intersect( unique(union(net[net$protein1 == node,]$protein2, net[net$protein2 == node,]$protein1)), tovisit)
+      components[[icomponent]] <- c(components[[icomponent]], neighs)
+      tovisit <- setdiff(tovisit, neighs)
+      iqueue <- iqueue + 1
+    }
+
+    icomponent <- icomponent + 1
+  }
+
+  return(components)
+}
+
 
 #' Expansion of the seed network
 #'
 #' Expands with connectors the network formed by seed proteins,
-#' that are the producs fo the genes int he genomic context,
-#' by the expasion algorithm.
+#' that are the produtcs of the genes in the genomic context and in the interaction context,
+#' by the expansion algorithm.
 #' Connectors are neighbors of selected proteins in the input PPI network.
 #'
-#' @param genomic_context a two column data.fram produced by \code{\link[LErNet]{get_genomic_context}}
+#' @param seeds a list produced by \code{\link[LErNet]{get_genomic_context}} and \code{\link[LErNet]{search_in_arenaidb}}
 #' @param ppi_network a two column data.frame representing PPI network edges (see also \code{\link[LErNet]{get_stringdb}} )
-#' @param ensp_to_ensg a two column data.frame for mapping proteins to their producer genes (see also \code{\link[LErNet]{get_stringdb}} )
-#' @param strict_proteins a list of proteins
-#' @param strict_connectors if \code{TRUE} connectors can onyl be choosen from the \code{strict_proteins} list
+#' @param de_proteins a vector of stricted proteins. If empty, the complete set of neighbors is extracted otherwise only pcgenes in this set are taken into account.
 #'
 #' @return a list
 #' \describe{
-#'   \item{network_components}{a list of connected components of the resultant expanded network. Each compoent is a list of proteins.}
-#'   \item{network_seeds}{list of seed proteins that have succefully been mapped to the PPI network.}
+#'   \item{out_components}{a list of connected components of the resultant expanded network. Each compoent is a list of proteins.}
 #' }
 #'
 #' @examples
 #'
 #' @export
-expand_seeds <- function(
-  genomic_context,
+
+expand_seeds<- function(
+  seeds,
   ppi_network,
-  ensp_to_ensg,
-  strict_proteins,
-  strict_connectors = TRUE
+  de_proteins = NULL
 )
 {
-  # map seeds to ppi nodes
-  closestGene<-genomic_context$partner_coding_gene
-  matching<-ensp_to_ensg[ensp_to_ensg$ensembl_gene_id %in% closestGene, ]
-  res_prot<-matching$ensembl_peptide_id
-
-  #pcgenes <- strinct_list
-  #mrna_annot<-getBM(attributes = c("ensembl_gene_id", "ensembl_transcript_id", "ensembl_peptide_id"),
-  #                  filters = "ensembl_gene_id", values = unique(pcgenes), mart = mart)
-  #strict_proteins<-mrna_annot$ensembl_peptide_id
-
-  #empty<-which(strict_proteins == "")
-  #strict_proteins<-strict_proteins[-empty]
-  strict_proteins<-strict_proteins[ strict_proteins != ""  ]
-
-  seedprot <- res_prot
-  subprot <- seedprot
+  #print(nrow(ppi))
   ppi <- ppi_network
+  if(!is.null(de_proteins)){
+    ppi <- ppi[ ppi$protein1 %in% de_proteins, ]
+    ppi <- ppi[ ppi$protein2 %in% de_proteins, ]
+  }
+  #print(nrow(ppi))
 
-  G<-make_empty_graph(n = 0, directed = FALSE)
-  G<-graph_from_data_frame(d = ppi, directed = FALSE, vertices = NULL)
+  seed_ppi <- ppi[ ppi$protein1 %in% seeds, ]
+  seed_ppi <- seed_ppi[ seed_ppi$protein2 %in% seeds, ]
+  #print(c('@', nrow(seed_ppi)))
 
+  init_components <- get_connected_components(seed_ppi)
 
-  resConn<-list()
-  resSub<-list()
-  iter=1
-  cond1=FALSE
-  cond2=FALSE
-  isSCA = FALSE
-
-  while(TRUE) {
-    connectors<-vector("character", length=0)
-    #print(paste0("***ITERATION ", iter))
-    c=1
-    CandGene=vector(mode = "character", length = length(subprot))
-    for(i in 1:length(subprot)) {
-      if(subprot[i] %in% V(G)$name) {
-        N = neighbors(graph = G, v = subprot[i])
-        N = as.character(N$name)
-        for(j in 1:length(N)) {
-          if((!(N[j] %in% CandGene)) && (!(N[j] %in% subprot)) && !is.na(N[j])) {
-            CandGene[c]<-N[j]
-            c=c+1
-          }
-        }
-      }
-    }
-    remove(N)
-    remove(i)
-    remove(j)
-
-    length(CandGene)
-
-    while(TRUE) {
-
-      SubNet<-make_empty_graph(n = 0, directed = FALSE)
-      keepV<-which(V(G)$name %in% subprot)
-      SubNet<-induced_subgraph(graph = G, vids = keepV)
-
-      subComp<-components(graph = SubNet)
-      if(max(subComp$csize)<2) {
-        cond1=TRUE
-        #print("esci in subComp?")
-        break
-      }
-
-      maxSubComp<-which(subComp$csize==max(subComp$csize))###############[1]
-      #print(paste0("How many sub connected component? ", length(maxSubComp)))
-
-      LCC<-vector(mode = "integer", length = length(maxSubComp))
-      for(c in 1:length(maxSubComp)) {
-        H<-names(subComp$membership[subComp$membership==maxSubComp[c] ])
-        LCC[c]<-length(intersect(H, seedprot))
-      }
-      start_triangles<-length(triangles(SubNet))/3
-      RankCand<-vector(mode="numeric", length=length(CandGene))
-      noTriangles<-vector(mode="numeric", length=length(CandGene))
-
-      for(k in 1:length(CandGene)) {
-        if(strict_connectors && !(CandGene[k] %in% strict_proteins)) {
-          next
-        }
-        TmpGene=subprot
-        TmpGene[length(TmpGene)+1]<-CandGene[k]
-        TmpNet<-induced_subgraph(graph = G, vids = which(V(G)$name %in% TmpGene))
-
-        comp<-components(graph = TmpNet)
-        if(max(comp$csize)<2) {
-          cond2=TRUE
-          #print("esci in comp?")
-          break
-        }
-        maxComp<-which(comp$csize==max(comp$csize))############################[1]
-
-        LCC1<-vector(mode = "integer", length = length(maxComp))
-        for(c1 in 1:length(maxComp)) {
-          H1<-names(comp$membership[comp$membership==maxComp[c1] ])
-          LCC1[c1]<-length(intersect(H1, seedprot))
-        }
-        RankCand[k]<-max(LCC1)-max(LCC)
-
-        triangles<-length(triangles(TmpNet))/3 #numero di triangoli totali nella TmpNet
-
-        if(isSCA) {
-          noTriangles[k]=0
-        }
-        else {
-          noTriangles[k]<-triangles-start_triangles
-        }
-
-        remove(TmpGene)
-
-      }
-
-      # Get the IDs of CandGene that maximize the LCC value
-      idx<-which(RankCand==max(RankCand))
-      if(max(RankCand)==0) {
-        #print("esci al rank?")
-        break
-      }
-
-      # Massimizzo il numero di triangoli
-      choice=-1 #quale idx scelgo
-      maxTr=-1 #max numero di triangoli
-
-      if(length(idx)>1) {
-        #print("ho più massimi uguali")
-      }
-
-      idxSameTr<-c(rep(NA, length(idx)))
-
-      for(y in 1:length(idx)) {
-        if(maxTr < noTriangles[idx[y]]) {
-          maxTr=noTriangles[idx[y]]
-          choice=y
-          idxSameTr[y]<-idx[y]
-        }
-        else if(maxTr == noTriangles[idx[y]]) {
-          idxSameTr[y]<-idx[y]
-        }
-      }
-
-      # Scelgo in base alla ratio maggiore, ovvero scelgo il nodo i cui vicini trovano
-      # maggiore corrispondenza nella lista di subprot
-
-      if(length(idxSameTr)>1) {
-
-        #print("scelgo in base alla ratio ")
-        remove(choice)
-
-        choice=-1
-        r=-1
-
-        for(t in 1:length(idxSameTr)) {
-          if(!is.na(idxSameTr[t])) {
-            maxNeigh<-neighbors(graph = G, v = CandGene[idxSameTr[t]])
-            maxNeigh<-as.character(maxNeigh$name)
-            ratio<-length(intersect(subprot, unique(maxNeigh)))/length(unique(maxNeigh))
-
-            if(r<ratio) {
-              r=ratio
-              choice=t
-            }
-          }
-        }
-      }
-
-      #aggiorno le mie seed aggiungendo il nuovo gene
-      subprot[length(subprot)+1]<-CandGene[idx[choice]]
-
-      #aggiungo il gene alla lista dei connectors
-      connectors[length(connectors)+1]<-CandGene[idx[choice]]
-
-
-      #print(paste0("Candidate gene: ", CandGene[idx[choice]]))
-      # print(paste0("Rank: ", RankCand[idx[choice]]))
-      #print(paste0("LCC: ", LCC))
-
-      #print('-----------------------------')
-
-    }
-    if(cond1 | cond2) break
-    if(length(connectors)>1) {
-      resConn[[iter]]<-connectors
-    }
-    else {
-      break
-    }
-
-    # Update the starting graph to extract the second biggest connected component
-    new_graph=induced_subgraph(graph = G, vids = which(V(G)$name %in% subprot))
-
-    cc<-components(graph = new_graph)
-    cc_idx<-which(cc$csize==max(cc$csize))
-    cc_names<-names(cc$membership[cc$membership==cc_idx])
-
-    if(all(subprot %in% cc_names)) {
-      break
-    }
-
-    firstCC<-subprot[subprot %in% cc_names]
-    resSub[[iter]]<-firstCC
-    nodes<-V(G)$name[V(G)$name %in% firstCC]####
-    ##  G <- G - nodes
-    toRemove<-which(seedprot %in% firstCC)
-    seedprot<-seedprot[-toRemove]
-    subprot <- seedprot
-
-    iter=iter+1
-    remove(nodes)
-    remove(toRemove)
+  for(seed in setdiff( seeds, unlist(init_components) )){
+    init_components <- append(init_components, list(seed) )
   }
 
-  return(  list(  "network_components" = resSub, "network_seeds" = res_prot) )
+  #selected <- unlist(init_components, recursive = FALSE)
+  selected_n_co <- data.frame( matrix(ncol=2, nrow=length( unlist(init_components, recursive = FALSE) )) )
+  colnames(selected_n_co) <- c('node', 'coco')
+  selected_n_co$node = unlist(init_components, recursive = FALSE)
+  for(i in 1:length(init_components)){
+    selected_n_co$coco[ selected_n_co$node %in% init_components[[i]]] <- i
+  }
 
- # list of lists
+
+  out_components <- list()
+
+
+  while(nrow(selected_n_co) > 0){
+
+    cocos <- unique(selected_n_co$coco)
+    coco_sizes <- data.frame(matrix(ncol=2, nrow = length(cocos), dimnames=list(NULL, c('coco','size')) ))
+    coco_sizes$coco <- cocos
+    for(c in cocos){
+      coco_sizes$size[coco_sizes$coco == c] <- nrow( selected_n_co[selected_n_co$coco == c, ] )
+    }
+    maxcoco <- coco_sizes[which.max(coco_sizes$size),'coco']
+
+
+    coco_neighs <- ppi[ ppi$protein1 %in% selected_n_co$node[selected_n_co$coco == maxcoco] ,]
+    coco_neighs <- ppi[ ppi$protein2 %in% selected_n_co$node[selected_n_co$coco == maxcoco],]
+    coco_neighs <- unique( union( coco_neighs$protein1, coco_neighs$protein2 ) )
+    coco_neighs <- setdiff(coco_neighs, selected_n_co$node)
+
+    #print(coco_neighs)
+
+    while(length(coco_neighs) > 0){
+
+
+      scores <- data.frame(matrix(ncol=4, nrow=length(coco_neighs)))
+      colnames(scores) <- c('node','lcc','triangles','seed_edges')
+      scores$node <- coco_neighs
+
+      for(irow in 1:nrow(scores)){
+        node <- scores[irow,'node']
+        node_neighs <-   intersect(selected_n_co$node,
+                                   unique(union(ppi[ ppi$protein1 == node, ]$protein2,
+                                                ppi[ ppi$protein2 == node, ]$protein1))
+        )
+        coco_neighs <- unique(selected_n_co[ selected_n_co$node %in% node_neighs, 'coco' ])
+
+        scores[irow,'lcc'] <- nrow( selected_n_co[selected_n_co$coco %in% coco_neighs, ] )
+
+        scores[irow, 'seed_edges'] <- length(coco_neighs)
+      }
+      scores <- scores[scores$lcc > 1,]
+
+
+      if( max(scores$lcc) > max(coco_sizes$size) ){
+        print(c('@',max(scores$lcc),max(coco_sizes$size)))
+
+
+        maxneighs <- which( scores$lcc == max(scores$lcc) )
+        if(length(maxneighs) == 1){
+          imaxneigh <- maxneighs[1]
+          new_connector  <- scores[imaxneigh,'node']
+
+        } else {
+          for(irow in maxneighs){
+            node <- scores[irow,'node']
+            node_neighs <- intersect(selected_n_co$node,
+                                     unique(union(ppi[ ppi$protein1 == node, ]$protein2,
+                                                  ppi[ ppi$protein2 == node, ]$protein1))
+            )
+
+            triangles <- seed_ppi[seed_ppi$protein1 %in% node_neighs, ]
+            triangles <- triangles[triangles$protein2 %in% node_neighs, ]
+
+            scores[irow,'triangles'] <- nrow(triangles)
+          }
+
+          maxneighs <- which( scores$triangles == max(scores$triangles) )
+          if(length(maxneighs) == 1){
+            imaxneigh <- maxneighs[1]
+            new_connector  <- scores[imaxneigh,'node']
+
+          } else {
+            new_connector <- scores[which.max( scores$seed_edges ), 'node']
+          }
+        }
+
+
+        # merge connected components by putting the same identifier for all of them
+        node_neighs <- intersect(selected_n_co$node,
+                                 unique(union(ppi[ ppi$protein1 == new_connector, ]$protein2,
+                                              ppi[ ppi$protein2 == new_connector, ]$protein1))
+        )
+        neighs_coco <- unique(selected_n_co[ selected_n_co$node %in% node_neighs, 'coco' ])
+        one_coco <- min(neighs_coco)
+        selected_n_co$coco[selected_n_co$coco %in% neighs_coco] <- one_coco
+
+        # add the connector to the merged connected components
+        selected_n_co <- rbind(selected_n_co, c(new_connector, one_coco))
+
+        # add all the edges between the connector and the seeds to the current seed network
+        # it will be used for calculating triangles in future iterations
+        seed_ppi <- rbind(seed_ppi, ppi[ ppi$protein1 == new_connector, ])
+        seed_ppi <- rbind(seed_ppi, ppi[ ppi$protein2 == new_connector, ])
+        ppi <- subset(ppi, protein1 != new_connector, protein2 != new_connector)
+
+
+        # since the previous largest connected component is now merged with at least one other component
+        # the list of nodes that are neighbors of the new largest component needs to be updated
+        coco_neighs <- ppi[ ppi$protein1 %in% selected_n_co$node[selected_n_co$coco == one_coco] ,]
+        coco_neighs <- ppi[ ppi$protein2 %in% selected_n_co$node[selected_n_co$coco == one_coco],]
+        coco_neighs <- unique( union( coco_neighs$protein1, coco_neighs$protein2 ) )
+        coco_neighs <- setdiff(coco_neighs, selected_n_co$node)
+
+
+
+        cocos <- unique(selected_n_co$coco)
+        coco_sizes <- data.frame(matrix(ncol=2, nrow = length(cocos), dimnames=list(NULL, c('coco','size')) ))
+        coco_sizes$coco <- cocos
+        for(c in cocos){
+          coco_sizes$size[coco_sizes$coco == c] <- nrow( selected_n_co[selected_n_co$coco == c, ] )
+        }
+        maxcoco <- coco_sizes[which.max(coco_sizes$size),'coco']
+
+
+      } else {
+        coco_neighs <- list()
+      }
+    }
+
+    cocos <- unique(selected_n_co$coco)
+    coco_sizes <- data.frame(matrix(ncol=2, nrow = length(cocos), dimnames=list(NULL, c('coco','size')) ))
+    coco_sizes$coco <- cocos
+    for(c in cocos){
+      coco_sizes$size[coco_sizes$coco == c] <- nrow( selected_n_co[selected_n_co$coco == c, ] )
+    }
+    maxcoco <- coco_sizes[which.max(coco_sizes$size),'coco']
+
+
+    out_components <- append(out_components, list(  selected_n_co[ selected_n_co$coco == maxcoco, 'node']  ))
+    selected_n_co <- subset(selected_n_co, coco != maxcoco)
+  }
+
+
+  for(seed in setdiff(seeds, unlist(out_components))){
+    out_components <- append(out_components, list(seed))
+  }
+  return(out_components)
 }
 
 
@@ -357,192 +312,134 @@ expand_seeds <- function(
 #'
 #' Visualizes the expanded network,
 #' composed by seed proteins and connectors.
-#' LncRNA are added together with extra edges in order to report the genomic context.
-#' LncRNAs are linked to the proteins that are products of their genomic context.
+#' LncRNA are added together with extra edges in order to report the lncrna context.
+#' LncRNAs are linked to the proteins that are products of their lncrna context.
 #'
 #'
-#' @param lncgenes a list of lncRNA genes
-#' @param genomic_context the genomc context of the lncRNAs (see \code{\link[LErNet]{get_genomic_context}})
-#' @param ppi_network a two column data.frame representing PPI network edges (see also \code{\link[LErNet]{get_stringdb}} )
-#' @param ensp_to_ensg a two column data.frame for mapping proteins to their producer genes (see also \code{\link[LErNet]{get_stringdb}} )
-#' @param input_proteins the complete list of input proteins,that are of interest for the study
-#' @param network_seeds the lsit of seed protieins
-#' @param expanded_elements the list of proteins that must be visualized
-#' @param mart a biomaRt ojbect used to visualize symbols instead of Ensembl IDs
-#' @param mart_symbol_column column of the biomaRt ojbect fomr wich symbols are retrieved
+#' @param lncrna_context the genomic and interaction context of the lncRNAs (see \code{\link[LErNet]{get_genomic_context}}) and \code{\link[LErNet]{search_in_arenaidb}}
+#' @param de_proteins the complete vector of input proteins,that are of interest for the study
+#' @param network_seeds the list of seed proteins
+#' @param expanded_elements the list of proteins (see also \code{\link[LErNet]{expand_seeds}} ) that must be visualized
+#' @param bg_ppi_network a two column data.frame representing PPI network edges (see also \code{\link[LErNet]{get_stringdb}} )
 #'
 #' @return visualizes the network in the Viewer window
 #'
 #' @examples
 #'
 #' @export
-visualize <-function(
-  lncgenes, #strict_lncgenes <- lncgenes
-  genomic_context, #lnc_neighbors <- closest
-  ensp_to_ensg, #complete_ensp_to_ensg <- string_genes
-  input_proteins, #strict_proteins <- DEproteins
-  network_seeds, #network_seeds <- res_prot
-  ppi_network, #ppi <- ppi
-  expanded_elements, # expanded_elements <- unlist(resSub)
-  mart, #mart <- mart
-  mart_symbol_column = NULL# mart_symbol_column <- "mgi_symbol"    #def <- NULL
-)
-{
+visualize <- function(
+  lncrna_context,
+  de_proteins,
+  network_seeds,
+  expanded_elements,
+  bg_ppi_network,
+  labels
+){
+  #nodes <- data.frame( matrix(ncol=8, nrow=0, dimnames=list(NULL, c('id','name','group','flag','shape','values','label','font.size'))) )
 
-  strict_lncgenes <- lncgenes
-  closest <- genomic_context
-  complete_ensp_to_ensg <- ensp_to_ensg
-  strict_proteins <- input_proteins
-  ppi <- ppi_network
+  lncrnas = unique(lncrna_context$lncrna)
 
-  starting_seed_prot <- network_seeds
-  resConn <- setdiff(expanded_elements,network_seeds )
-  pred<-c(network_seeds, resConn)
-  netFile<-subset(ppi, ppi$protein1 %in% pred & ppi$protein2 %in% pred)
-  allNodes<-union(netFile$protein1, netFile$protein2)
-  nodes<-data.frame(id = c(seq(1,length(allNodes))), name = c(allNodes))
-  sourceNodes<-netFile$protein1
-  IDsourceNodes<-vector(mode = "integer", length = length(sourceNodes))
-  for(i in 1:length(sourceNodes)) {
-    if(sourceNodes[i] %in% nodes$name) {
-      IDsourceNodes[i]<-nodes$id[which(nodes$name == sourceNodes[i])]
-    }
-  }
-  targetNodes<-netFile$protein2
-  IDtargetNodes<-vector(mode = "integer", length = length(targetNodes))
-  remove(i)
-  for(i in 1:length(targetNodes)) {
-    if(targetNodes[i] %in% nodes$name) {
-      IDtargetNodes[i]<-nodes$id[which(nodes$name == targetNodes[i])]
-    }
-  }
-  edges<-data.frame(from = IDsourceNodes, to = IDtargetNodes)
-  seedProt<-starting_seed_prot
-  seedConn<-unlist(resConn) # quindi ho 14 connectors
-  seedPred<-vector(mode = "character", length = length(nodes$name))
-  remove(i)
-  for(i in 1:length(seedPred)) {
-    if(nodes$name[i] %in% seedProt) {
-      seedPred[i]<-"Seed Protein"
-    }
-    else if(nodes$name[i] %in% seedConn) {
-      seedPred[i]<-"Seed Connector"
-    }
-  }
-  nodes$group<-seedPred
-  flag<-rep(NA, length = nrow(nodes))
-  for(d in 1:nrow(nodes)) {
-    if(nodes$name[d] %in% strict_proteins) {
-      flag[d]<-"DE"
-    }
-  }
-  nodes$flag<-flag
-  shape<-vector(mode = "character", length = nrow(nodes))
-  for(s in 1:length(shape)) {
-    if(!is.na(flag[s])) {
-      shape[s]<-"star"
-    }
-    else {
-      shape[s]<-"dot"
-    }
-  }
-  nodes$shape<-shape
-  nodes$name<-as.character(nodes$name)
-  starting_nodes<-nodes
+  x <- merge(lncrnas, labels, by.x=1, by.y='id')
 
-  if(! is.null(mart_symbol_column)){
-    label<-getBM(attributes = c("ensembl_peptide_id","ensembl_gene_id", mart_symbol_column),
-                 filters = "ensembl_peptide_id", values = nodes$name, mart = mart)
+  lnc_nodes <- data.frame(
+    id = seq(from=1, to=nrow(x)),
+    name = x$label,
+    group = rep('lncRNA', times=nrow(x)),
+    flag = rep('DE', times=nrow(x)),
+    shape = rep('square', times=nrow(x)),
+    values = rep(1, times=nrow(x)),
+    label = x$label,
+    font.size = as.integer(rep(20,times=nrow(x))),
+    origin = x$x
+  )
 
-    if(nrow(label) != nrow(nodes)) {
-      for(p in 1:nrow(nodes)) {
-        if((nodes$name[p] %in% label$ensembl_peptide_id)) {
-        }else{
-          addRow<-c(rep(nodes$name[p], times = 3))
-          label<-rbind(label, addRow)
-        }
-      }
-    }
-    #nodes$label<-label[,mart_symbol_column]
-    nodes$label<-label[match(nodes$name,label$ensembl_peptide_id),mart_symbol_column]
-  }
-  font.size<-c(50)
-  nodes$font.size<-font.size
-  nodes$values <- rep(10, nrow(nodes) )
 
-  visNetwork(nodes, edges, width = "100%", height="1000px") %>%
-    visIgraphLayout(layout = "layout_with_fr") %>%
+  y <- merge(  data.frame('protein'=unique( c(lncrna_context$mate, network_seeds, expanded_elements) )), labels, by.x='protein', by.y='id'  )
+
+  protein_nodes <- data.frame(
+    id = seq(from=nrow(x)+1, to=nrow(x)+nrow(y)),
+    name = y$label,
+    group = rep('Connector', times=nrow(y)),
+    flag = rep(NA, times=nrow(y)),
+    shape = rep('dot', times=nrow(y)),
+    values = rep(50, times=nrow(y)),
+    label = y$label,
+    #label = y$protein,
+    font.size = as.integer(rep(50,times=nrow(y))),
+    origin = y$protein
+  )
+
+  protein_nodes$group[ protein_nodes$origin %in% network_seeds ] <- 'Seed'
+  protein_nodes$group[ protein_nodes$origin %in% lncrna_context$mate ] <- 'Seed'
+  protein_nodes$flag[ protein_nodes$origin %in% de_proteins ] <- 'DE'
+  protein_nodes$shape[protein_nodes$flag != 'DE'] <- 'diamond'
+  protein_nodes$shape[is.na(protein_nodes$flag)] <- 'diamond'
+
+
+  context_edges <- (merge(lncrna_context, lnc_nodes, by.x='lncrna', by.y='origin'))[,c('id','mate')]
+  colnames(context_edges) <- c('from', 'mate')
+  context_edges <- merge(context_edges, protein_nodes, by.x='mate',by.y='origin')[,c('from','id')]
+  colnames(context_edges) <- c('from', 'to')
+
+
+  ppi_edges <- bg_ppi_network[bg_ppi_network$protein1 %in% protein_nodes$origin,]
+  ppi_edges <- ppi_edges[ppi_edges$protein2 %in% protein_nodes$origin,]
+  nrow(ppi_edges)
+  ppi_edges <- (merge(ppi_edges, protein_nodes, by.x='protein1', by.y='origin'))[, c('id', 'protein2')]
+  colnames(ppi_edges) <- c('from', 'protein2')
+  nrow(ppi_edges)
+  ppi_edges <- (merge(ppi_edges, protein_nodes, by.x='protein2', by.y='origin'))[, c('from', 'id')]
+  colnames(ppi_edges) <- c('from', 'to')
+  nrow(ppi_edges)
+
+
+
+
+  nodes <- rbind(lnc_nodes, protein_nodes)
+  rownames(nodes) <- seq(from=1, to=nrow(nodes))
+
+  edges <- rbind(context_edges, ppi_edges)
+
+
+  library(visNetwork)
+  visNetwork(nodes, edges, width = "100%", height="1000px")%>%
+    #visIgraphLayout(layout = "layout_with_fr") %>%
+    #visIgraphLayout(layout = "layout_in_circle") %>%
+    #visIgraphLayout(layout = "layout_with_sugiyama") %>%
+    visIgraphLayout(layout = "layout_nicely" ,physics = TRUE, smooth = TRUE) %>%
     visEdges(color = "black") %>%
-    visGroups(groupname = "Seed Protein", color = "purple") %>%
-    visGroups(groupname = "Seed Connector", color = "pink") %>%
-    visOptions(highlightNearest = list(enabled = T))
-  starting_nodes<-nodes
-  starting_edges<-edges
-
-  colnames(closest) <- c("lnc_known", "ensembl_gene_id")
-  new_closest <- merge(closest, complete_ensp_to_ensg)
-  new_closest<-new_closest[,c(2,1,3)]
-  colnames(new_closest) <- c("lnc_known","ensembl_gene_id","partner_coding_peptide")
-  lnc<-vector(mode = "character", length = 0)
-  IDtarget_lnc<-vector(mode = "integer", length = 0)
-
-  for(k in 1:nrow(new_closest)) {
-    if(new_closest$partner_coding_peptide[k] %in% nodes$name) {
-      IDtarget_lnc[length(IDtarget_lnc)+1]<-nodes$id[which(nodes$name %in% new_closest$partner_coding_peptide[k])]
-      lnc[length(lnc)+1]<-new_closest$lnc[k]
-    }
-  }
-  remove(k)
-  tmp_lnc<-data.frame(id = seq(from = nrow(nodes)+1, to = nrow(nodes)+length(lnc)),
-                      name = lnc,
-                      group = rep("lncRNA", times = length(lnc)),
-                      flag = rep("DE", length(lnc)),
-                      shape = rep("square", times = length(lnc)),
-                      values = rep(1, times = length(lnc)),
-                      label = lnc,
-                      font.size = as.integer(rep(10, times = length(lnc))))
-
-  nodes<-rbind(nodes, tmp_lnc)
-  # sappiamo già qual è il target quindi ricaviamo il sorgente
-  IDsource_lnc<-nodes[nodes$name %in% tmp_lnc$name, 1]
-  edges_lnc<-data.frame(from = IDsource_lnc, to = IDtarget_lnc)
-  edges<-rbind(edges, edges_lnc)
-  visNetwork(nodes, edges, width = "100%", height="1000px") %>%
-    visIgraphLayout(layout = "layout_with_fr") %>%
-    #visOptions(highlightNearest = list(enabled = T)) %>%
-    visEdges(color = "black") %>%
-    visGroups(groupname = "Seed Protein", color = "purple") %>%
-    visGroups(groupname = "Seed Connector", color = "pink") %>%
-    visGroups(groupname = "lncRNA", color = rgb(237,125,49,maxColorValue=255)) %>%
+    visGroups(groupname = "lncRNA", color = "orange") %>%
+    visGroups(groupname = "Seed", color = "purple") %>%
+    visGroups(groupname = "Connector", color = "pink") %>%
+    visOptions(highlightNearest = list(enabled = T)) %>%
     visOptions(selectedBy = "group")
-
-
 }
-
 
 
 #' Functional enrichment
 #'
 #' Computes functional enrichment of a given set of proteins via the ReactomePA package.
 #'
-#' @param ens_proteins list of proteins, in Ensembl format, for which to compute the enrichment
+#' @param entrez_genes list of proteins, in Entrez format, for which to compute the enrichment
 #' @param oganism oganism name (see \code{\link[ReactomePA]{enrichPathway}})
-#' @param mart a biomaRt object of the given species need for the conversion from  Ensembl to Entrez IDs
 #'
 #' @return a ReactomePA result object.
 #'
 #' @examples
 #'
 #' @export
+
 enrich <-function(
-  ens_proteins,
-  organism,
-  mart
+  entrez_genes,
+  organism
 )
 {
-  mseeds <- enps_to_entrez(ens_proteins, mart)
+  # library(ReactomePA)
+  # #for human
+  # BiocManager::install("org.Hs.eg.db")
+  # library(org.Hs.eg.db)
 
-  w<-enrichPathway(gene = unique(mseeds$entrezgene), organism = organism,
+  w<-enrichPathway(gene = unique(entrez_genes), organism = organism,
                    pvalueCutoff=0.05, pAdjustMethod = "BH",
                    qvalueCutoff = 0.2, readable=T,
                    minGSSize = 1, maxGSSize = 1000)
@@ -551,7 +448,3 @@ enrich <-function(
 
   return(w)
 }
-
-
-
-
