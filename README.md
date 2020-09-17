@@ -5,6 +5,12 @@
 
 <hr />
 
+# WARNING!!!
+# NEW VERSION WILL COME SOON
+[visit the new version repository](https://github.com/InfOmics/LErNet/tree/lernet.1.0)
+
+<hr />
+
 
 ## License
 *LErNet* is distributed under the MIT license. This means that it is free for both academic and commercial use. Note however that some third party components in *LErNet* require that you reference certain works in scientific publications.
