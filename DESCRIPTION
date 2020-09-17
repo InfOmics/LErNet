@@ -1,8 +1,8 @@
 Package: LErNet
 Type: Package
 Title: LErNet: characterization of lncRNAs via context-aware network expansion and enrichment analysis
-Version: 0.1.1
-Author: Vincenzo Bonnici, Simone Caligola, Giulia Fiorini, Luca Giudice, Rosalba Giugno
+Version: 1.0
+Author: Vincenzo Bonnici, Michele Marchi, Nipuli Fernando, Rosalba Giugno
 Maintainer: Vincenzo Bonnici <vincenzo.bonnici@univr.it>
 Description: Long non-coding RNAs (lncRNA) have recently acquired a boost of interest 
     for their implication in several biological conditions. 
