@@ -5,35 +5,24 @@
 \title{Visualization of the expanded network}
 \usage{
 visualize(
-  lncgenes,
-  genomic_context,
-  ensp_to_ensg,
-  input_proteins,
+  lncrna_context,
+  de_proteins,
   network_seeds,
-  ppi_network,
   expanded_elements,
-  mart,
-  mart_symbol_column = NULL
+  bg_ppi_network,
+  labels
 )
 }
 \arguments{
-\item{lncgenes}{a list of lncRNA genes}
+\item{lncrna_context}{the genomic and interaction context of the lncRNAs (see \code{\link[LErNet]{get_genomic_context}}) and \code{\link[LErNet]{search_in_arenaidb}}}
 
-\item{genomic_context}{the genomc context of the lncRNAs (see \code{\link[LErNet]{get_genomic_context}})}
+\item{de_proteins}{the complete vector of input proteins,that are of interest for the study}
 
-\item{ensp_to_ensg}{a two column data.frame for mapping proteins to their producer genes (see also \code{\link[LErNet]{get_stringdb}} )}
+\item{network_seeds}{the list of seed proteins}
 
-\item{input_proteins}{the complete list of input proteins,that are of interest for the study}
+\item{expanded_elements}{the list of proteins (see also \code{\link[LErNet]{expand_seeds}} ) that must be visualized}
 
-\item{network_seeds}{the lsit of seed protieins}
-
-\item{ppi_network}{a two column data.frame representing PPI network edges (see also \code{\link[LErNet]{get_stringdb}} )}
-
-\item{expanded_elements}{the list of proteins that must be visualized}
-
-\item{mart}{a biomaRt ojbect used to visualize symbols instead of Ensembl IDs}
-
-\item{mart_symbol_column}{column of the biomaRt ojbect fomr wich symbols are retrieved}
+\item{bg_ppi_network}{a two column data.frame representing PPI network edges (see also \code{\link[LErNet]{get_stringdb}} )}
 }
 \value{
 visualizes the network in the Viewer window
@@ -41,8 +30,8 @@ visualizes the network in the Viewer window
 \description{
 Visualizes the expanded network,
 composed by seed proteins and connectors.
-LncRNA are added together with extra edges in order to report the genomic context.
-LncRNAs are linked to the proteins that are products of their genomic context.
+LncRNA are added together with extra edges in order to report the lncrna context.
+LncRNAs are linked to the proteins that are products of their lncrna context.
 }
 \examples{
 

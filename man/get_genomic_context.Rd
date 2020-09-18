@@ -2,26 +2,18 @@
 % Please edit documentation in R/LErNet.R
 \name{get_genomic_context}
 \alias{get_genomic_context}
-\title{Extraction fo the genomic context}
+\title{Extraction of the genomic context}
 \usage{
-get_genomic_context(
-  positions,
-  lncgenes,
-  pcgenes,
-  max_window = 1e+05,
-  strict_genomics = TRUE
-)
+get_genomic_context(positions, lncgenes, pcgenes = NULL, max_window = 1e+05)
 }
 \arguments{
+\item{positions}{a data.frame reporting genomic positions. Columns are \code{id type seqname start end}. It may contain features into listed in \code{lncgenes} and \code{pcgenes}}
+
 \item{lncgenes}{a list of lncRNA genes}
 
+\item{pcgenes}{a list of protein-coding genes that are of interest for the study. If empty, the complete set of neighbors is extracted otherwise only pcgenes in this set are taken into account.}
+
 \item{max_window}{the maximum size of the genomic range}
-
-\item{poitions}{a data.frame reporting gemoic positions. Columns are \code{id type seqname start end}. It may contain features nto lited in \code{lncgenes} and \code{pcgenes}}
-
-\item{pngenes}{a list of protein-coding genes that are of interest for the study.}
-
-\item{stricg_genomics}{if \code{FALSE}, it allows the genomic context to be forme dby p.c. genes in the \code{pcgenes} list.}
 }
 \value{
 a two column data.frame reporting neighborhood information. The first column gives lncRNAs and the second column gives their associated neighbors.
@@ -30,30 +22,4 @@ a two column data.frame reporting neighborhood information. The first column giv
 Retrieves the genomic context of input lncRNAs.
 The genomic context is defined as the set of protin coding genes
 that resides within a given range.
-}
-\examples{
-library(R.utils)
-library(GenomicRanges)
-lncrna_file <- system.file("extdata", "41598_2018_30359_MOESM2_ESM.csv", package = "LErNet")
-pcrna_file <- system.file("extdata", "41598_2018_30359_MOESM3_ESM.csv", package = "LErNet")
-gtf_file <- system.file("extdata", "gencode.vM20.chr_patch_hapl_scaff.annotation.gtf.gz", package = "LErNet")
-pcgenes<-read.csv(pcrna_file)
-pcgenes<-as.character(pcgenes$gene_id)
-lncrnaInfo<-read.csv(lncrna_file)
-lncrnaInfo <- data.frame(lapply(lncrnaInfo, as.character), stringsAsFactors=FALSE)
-last<-which(lncrnaInfo$significant == 'FALSE')[1]
-lncrnaInfo<-lncrnaInfo[1:last-1,]
-lncrnaAll<-as.character(lncrnaInfo$gene_id)
-complete_positions <- LErNet::load_gtf(gtf_file)
-novel<-lncrnaInfo
-novel<-novel[novel$isoform_status == "lncRNA_Novel", ]
-chrs <- paste0("chr",sapply(strsplit(sapply(strsplit( novel$locus, "-"), `[`, 1), ":"), `[`, 1))
-starts <- sapply(strsplit(sapply(strsplit(novel$locus, "-"), `[`, 1), ":"), `[`, 2)
-ends <- sapply(strsplit(novel$locus, "-"), `[`, 2)
-novel_gtf <- data.frame( "id" = novel$gene_id, "type" = rep('novel lncRNA', times = nrow(novel)), "seqname" = chrs, "start" = starts, "end" = ends )
-complete_positions <- rbind(complete_positions, novel_gtf)
-rownames(complete_positions) <- seq(1:nrow(complete_positions))
-
-genomic_context <- LErNet::get_genomic_context(positions = complete_positions, lncgenes = lncrnaAll, pcgenes = pcgenes, max_window = 100000, strict_genomics = TRUE)
-
 }

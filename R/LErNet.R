@@ -16,7 +16,9 @@
 #' @param max_window the maximum size of the genomic range
 #'
 #' @return a two column data.frame reporting neighborhood information. The first column gives lncRNAs and the second column gives their associated neighbors.
+#'
 #' @examples
+#'
 #' @export
 get_genomic_context <- function(
   positions,

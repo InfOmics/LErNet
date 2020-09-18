@@ -20,7 +20,7 @@
 #' stringdb_tax = 9606
 #' stringdb_thr = 900
 #' mart = useMart(biomart = "ensembl", dataset = "hsapiens_gene_ensembl")
-#' ret <- LErNet::get_stringdb( stringdb_tax = stringdb_tax, stringdb_thr = stringdb_thr, mart = mart)
+#' ret <- LErNet::get_stringdb_bc_011( stringdb_tax = stringdb_tax, stringdb_thr = stringdb_thr, mart = mart)
 #' ppi_network <- ret[["ppi_network"]]
 #' ensp_to_ensg <- ret[["ensp_to_ensg"]]
 #'

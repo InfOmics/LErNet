@@ -4,36 +4,25 @@
 \alias{expand_seeds}
 \title{Expansion of the seed network}
 \usage{
-expand_seeds(
-  genomic_context,
-  ppi_network,
-  ensp_to_ensg,
-  strict_proteins,
-  strict_connectors = TRUE
-)
+expand_seeds(seeds, ppi_network, de_proteins = NULL)
 }
 \arguments{
-\item{genomic_context}{a two column data.fram produced by \code{\link[LErNet]{get_genomic_context}}}
+\item{seeds}{a list produced by \code{\link[LErNet]{get_genomic_context}} and \code{\link[LErNet]{search_in_arenaidb}}}
 
 \item{ppi_network}{a two column data.frame representing PPI network edges (see also \code{\link[LErNet]{get_stringdb}} )}
 
-\item{ensp_to_ensg}{a two column data.frame for mapping proteins to their producer genes (see also \code{\link[LErNet]{get_stringdb}} )}
-
-\item{strict_proteins}{a list of proteins}
-
-\item{strict_connectors}{if \code{TRUE} connectors can onyl be choosen from the \code{strict_proteins} list}
+\item{de_proteins}{a vector of stricted proteins. If empty, the complete set of neighbors is extracted otherwise only pcgenes in this set are taken into account.}
 }
 \value{
 a list
 \describe{
-  \item{network_components}{a list of connected components of the resultant expanded network. Each compoent is a list of proteins.}
-  \item{network_seeds}{list of seed proteins that have succefully been mapped to the PPI network.}
+  \item{out_components}{a list of connected components of the resultant expanded network. Each compoent is a list of proteins.}
 }
 }
 \description{
 Expands with connectors the network formed by seed proteins,
-that are the producs fo the genes int he genomic context,
-by the expasion algorithm.
+that are the produtcs of the genes in the genomic context and in the interaction context,
+by the expansion algorithm.
 Connectors are neighbors of selected proteins in the input PPI network.
 }
 \examples{
