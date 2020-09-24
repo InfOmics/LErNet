@@ -1,6 +1,6 @@
 
 #' Retriving the aliases of lncrnas from Arena-idb
-#' 
+#'
 #' @export
 
 get_arenaidb_ncrnas_aliases <- function(){
@@ -87,8 +87,8 @@ get_arenaidb_gene_aliases <- function(){
 }
 
 #' Retriving the interactions involving lncrnas
-#' 
-#' @return arenaidb a data.frame containing in the first two columns the informations about the lncrnas and in the following those about the interactions 
+#'
+#' @return arenaidb a data.frame containing in the first two columns the informations about the lncrnas and in the following those about the interactions
 #'
 #' @export
 
@@ -119,24 +119,23 @@ get_arenaidb_diseases <- function(){
 #' @return arenaidb a data.frame where for each ncrna are specified all the informations
 #'
 #' @export
+
 get_arenaidb_ncrnas <- function(){
   arenaidb_file <- system.file("extdata", "arenaidb", "ncRNA.tsv.gz", package = "LErNet")
-  arenaidb <- read.csv(arenaidb_file , stringsAsFactors = FALSE, sep='\t', rownames=NULL)
+  arenaidb <- read.csv(arenaidb_file , stringsAsFactors = FALSE, sep='\t')
   return(arenaidb)
 }
 
-
-
 #' Retriving the informations about the aliases and the interactions of lncrna filtering by genes and proteins
-#' 
+#'
 #' @param lncrna_ensembl_ids a list of lncrnas in ensembl id format
 #' @param pcgene_ensembl_ids a list of protein coding genes in ensembl id format
 #' @param protein_ensembl_ids a list of protein in ensembl id format
 #' @param protein_symbols a list of protein in symbol id format
 #'
 #'
-#' @return return_value a list of three data.frame: alias_mapping, gene_icontext and protein_icontext                      
-#' 
+#' @return return_value a list of three data.frame: alias_mapping, gene_icontext and protein_icontext
+#'
 #' @export
 
 
@@ -160,7 +159,7 @@ search_in_arenaidb <- function(
   de_lncrna_aliases <- data.frame(
     #'alias_name' = de_lncrnas$ensembl_transcript_id,
     'alias_name' = lncrna_ensembl_ids,
-    'alias_space' = rep('ensembl', nrow(lncrna_ensembl_ids)) )
+    'alias_space' = rep('ensembl', length(lncrna_ensembl_ids)) )
 
 
   de_lncrna_aliases <- merge(de_lncrna_aliases, arenaidb_ncrnas_aliases)
@@ -235,7 +234,7 @@ search_in_arenaidb <- function(
 
     de_protein_symbol_aliases <- data.frame(
       'alias_name' = protein_symbols,
-      'alias_space' = rep('symbol', length(protein_symbols)) ) 
+      'alias_space' = rep('symbol', length(protein_symbols)) )
     de_protein_symbol_aliases <- merge(de_protein_symbol_aliases, arenaidb_protein_aliases)
 
     de_protein_aliases <- rbind(de_protein_aliases, de_protein_symbol_aliases )
