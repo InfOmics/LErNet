@@ -26,5 +26,5 @@ by the expansion algorithm.
 Connectors are neighbors of selected proteins in the input PPI network.
 }
 \examples{
-
+components <- LErNet::expand_seeds(seeds,  ppi_network,  de_proteins)
 }

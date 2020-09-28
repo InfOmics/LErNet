@@ -37,5 +37,11 @@ by the expasion algorithm.
 Connectors are neighbors of selected proteins in the input PPI network.
 }
 \examples{
+ret <- expand_seeds_bc_011(
+genomic_context = genomic_context,
+ppi_network = ppi_network,
+ensp_to_ensg = ensp_to_ensg,
+strict_proteins = strict_proteins,
+strict_connectors = TRUE)
 
 }

@@ -23,3 +23,10 @@ Retrieves the genomic context of input lncRNAs.
 The genomic context is defined as the set of protin coding genes
 that resides within a given range.
 }
+\examples{
+genomic_context <- LErNet::get_genomic_context(
+positions = complete_positions,
+lncgenes = de_lncrnas$ensembl_gene_id,
+pcgenes = de_pcgenes,
+max_window = 100000)
+}

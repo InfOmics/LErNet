@@ -15,6 +15,3 @@ components a list of all connected proteins
 \description{
 Extraction of the connected components of the network
 }
-\examples{
-
-}

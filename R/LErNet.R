@@ -18,7 +18,11 @@
 #' @return a two column data.frame reporting neighborhood information. The first column gives lncRNAs and the second column gives their associated neighbors.
 #'
 #' @examples
-#'
+#' genomic_context <- LErNet::get_genomic_context(
+#'positions = complete_positions,
+#'lncgenes = de_lncrnas$ensembl_gene_id,
+#'pcgenes = de_pcgenes,
+#'max_window = 100000)
 #' @export
 get_genomic_context <- function(
   positions,
@@ -85,7 +89,6 @@ get_genomic_context <- function(
 #'
 #' @return components a list of all connected proteins
 #'
-#' @examples
 #'
 #' @export
 get_connected_components <- function(
@@ -134,7 +137,7 @@ get_connected_components <- function(
 #' }
 #'
 #' @examples
-#'
+#' components <- LErNet::expand_seeds(seeds,  ppi_network,  de_proteins)
 #' @export
 
 expand_seeds<- function(
@@ -327,6 +330,13 @@ expand_seeds<- function(
 #' @return visualizes the network in the Viewer window
 #'
 #' @examples
+#' LErNet::visualize(
+#'unique(lncrna_context),
+#'unique(de_proteins),
+#'unique(network_seeds),
+#'unique(expanded_elements),
+#'unique(bg_ppi_network),
+#'labels)
 #'
 #' @export
 visualize <- function(
@@ -428,7 +438,8 @@ visualize <- function(
 #' @return a ReactomePA result object.
 #'
 #' @examples
-#'
+#'entrez_ids <- unique(annot[annot$ensembl_peptide %in% comp,]$entrezgene_id)
+#'enrichment <- LErNet::enrich(entrez_ids, 'human')
 #' @export
 
 enrich <-function(

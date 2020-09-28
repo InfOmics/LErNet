@@ -81,6 +81,12 @@ get_stringdb_bc_011 <- function(
 #' }
 #'
 #' @examples
+#' ret <- expand_seeds_bc_011(
+#' genomic_context = genomic_context,
+#' ppi_network = ppi_network,
+#' ensp_to_ensg = ensp_to_ensg,
+#' strict_proteins = strict_proteins,
+#' strict_connectors = TRUE)
 #'
 #' @export
 expand_seeds_bc_011 <- function(

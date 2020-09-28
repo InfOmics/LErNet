@@ -34,5 +34,12 @@ LncRNA are added together with extra edges in order to report the lncrna context
 LncRNAs are linked to the proteins that are products of their lncrna context.
 }
 \examples{
+LErNet::visualize(
+unique(lncrna_context),
+unique(de_proteins),
+unique(network_seeds),
+unique(expanded_elements),
+unique(bg_ppi_network),
+labels)
 
 }
