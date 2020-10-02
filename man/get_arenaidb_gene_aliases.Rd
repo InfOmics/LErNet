@@ -9,3 +9,7 @@ get_arenaidb_gene_aliases()
 \description{
 Retriving the alias of genes from Arena-idb
 }
+\examples{
+gene_aliases <- get_arenaidb_gene_aliases()
+
+}

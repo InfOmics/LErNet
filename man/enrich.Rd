@@ -17,7 +17,3 @@ a ReactomePA result object.
 \description{
 Computes functional enrichment of a given set of proteins via the ReactomePA package.
 }
-\examples{
-entrez_ids <- unique(annot[annot$ensembl_peptide \%in\% comp,]$entrezgene_id)
-enrichment <- LErNet::enrich(entrez_ids, 'human')
-}

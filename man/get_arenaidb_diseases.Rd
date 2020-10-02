@@ -12,3 +12,7 @@ arenaidb a data.frame where for each lncrna is specified the diseases in which i
 \description{
 Retriving the disease's section of Arena-idb
 }
+\examples{
+diseases <- get_arenaidb_diseases()
+
+}

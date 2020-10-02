@@ -7,9 +7,9 @@
 get_stringdb(stringdb_tax = 9606, stringdb_thr = 900)
 }
 \arguments{
-\item{stringdb_tax}{taxa of the species}
+\item{stringdb_tax}{taxa of the species. Default human (9606)}
 
-\item{stringdb_thr}{threshold to be applied to the score on the edges of the PPI}
+\item{stringdb_thr}{threshold to be applied to the score on the edges of the PPI. Default threshold value 900}
 }
 \value{
 a list
@@ -24,5 +24,10 @@ thus other products are not reported.
 The function also returns the proteins associated to each gene within the STRING database.
 }
 \examples{
+library(STRINGdb)
+library(igraph)
+stringdb_tax = 9606
+stringdb_thr = 900
+ppi_network <- LErNet::get_stringdb( stringdb_tax = stringdb_tax, stringdb_thr = stringdb_thr)
 
 }

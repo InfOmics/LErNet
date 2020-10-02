@@ -12,3 +12,7 @@ arenaidb a data.frame containing in the first two columns the informations about
 \description{
 Retriving the interactions involving lncrnas
 }
+\examples{
+interactions <- get_arenaidb_interactions()
+
+}

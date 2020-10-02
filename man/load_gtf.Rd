@@ -16,3 +16,8 @@ a data.frame with columns: \code{id type seqname start end}
 Creates the coordinates data.frame by reading the data from a GTF file
 having 9 columns (whihc is the typical format of GTF files from GENCODE).
 }
+\examples{
+gtf_file <- system.file("extdata", "gencode.v34.annotation.gtf.gz", package = "LErNet")
+complete_positions <- LErNet::load_gtf(gtf_file)
+
+}

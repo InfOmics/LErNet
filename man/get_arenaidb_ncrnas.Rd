@@ -12,3 +12,7 @@ arenaidb a data.frame where for each ncrna are specified all the informations
 \description{
 Retriving the lncrna's section of Arena-idb
 }
+\examples{
+ncrnas <- get_arenaidb_ncrnas()
+
+}

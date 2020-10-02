@@ -9,3 +9,7 @@ get_arenaidb_ncrnas_aliases()
 \description{
 Retriving the aliases of lncrnas from Arena-idb
 }
+\examples{
+ncrnas_aliases <- get_arenaidb_ncrnas_aliases()
+
+}

@@ -9,3 +9,7 @@ get_arenaidb_protein_aliases()
 \description{
 Retriving the aliases of proteins from Arena-idb
 }
+\examples{
+protein_aliases <- get_arenaidb_protein_aliases()
+
+}

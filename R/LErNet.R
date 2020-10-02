@@ -10,7 +10,7 @@
 #' The genomic context is defined as the set of protin coding genes
 #' that resides within a given range.
 #'
-#' @param positions a data.frame reporting genomic positions. Columns are \code{id type seqname start end}. It may contain features into listed in \code{lncgenes} and \code{pcgenes}
+#' @param positions a data.frame reporting genomic positions by \code{\link[LErNet]{load_gtf}}. Columns are \code{id type seqname start end}. It may contain features into listed in \code{lncgenes} and \code{pcgenes}
 #' @param lncgenes a list of lncRNA genes
 #' @param pcgenes a list of protein-coding genes that are of interest for the study. If empty, the complete set of neighbors is extracted otherwise only pcgenes in this set are taken into account.
 #' @param max_window the maximum size of the genomic range
@@ -18,11 +18,6 @@
 #' @return a two column data.frame reporting neighborhood information. The first column gives lncRNAs and the second column gives their associated neighbors.
 #'
 #' @examples
-#' genomic_context <- LErNet::get_genomic_context(
-#'positions = complete_positions,
-#'lncgenes = de_lncrnas$ensembl_gene_id,
-#'pcgenes = de_pcgenes,
-#'max_window = 100000)
 #' @export
 get_genomic_context <- function(
   positions,
@@ -137,7 +132,6 @@ get_connected_components <- function(
 #' }
 #'
 #' @examples
-#' components <- LErNet::expand_seeds(seeds,  ppi_network,  de_proteins)
 #' @export
 
 expand_seeds<- function(
@@ -330,13 +324,6 @@ expand_seeds<- function(
 #' @return visualizes the network in the Viewer window
 #'
 #' @examples
-#' LErNet::visualize(
-#'unique(lncrna_context),
-#'unique(de_proteins),
-#'unique(network_seeds),
-#'unique(expanded_elements),
-#'unique(bg_ppi_network),
-#'labels)
 #'
 #' @export
 visualize <- function(
@@ -438,8 +425,6 @@ visualize <- function(
 #' @return a ReactomePA result object.
 #'
 #' @examples
-#'entrez_ids <- unique(annot[annot$ensembl_peptide %in% comp,]$entrezgene_id)
-#'enrichment <- LErNet::enrich(entrez_ids, 'human')
 #' @export
 
 enrich <-function(

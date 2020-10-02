@@ -7,6 +7,9 @@
 #'
 #' @return a data.frame with columns: \code{id type seqname start end}
 #'
+#' @examples
+#' gtf_file <- system.file("extdata", "gencode.v34.annotation.gtf.gz", package = "LErNet")
+#' complete_positions <- LErNet::load_gtf(gtf_file)
 #'
 #' @export
 load_gtf <- function(
@@ -45,8 +48,8 @@ load_gtf <- function(
 #' thus other products are not reported.
 #' The function also returns the proteins associated to each gene within the STRING database.
 #'
-#' @param stringdb_tax taxa of the species
-#' @param stringdb_thr threshold to be applied to the score on the edges of the PPI
+#' @param stringdb_tax taxa of the species. Default human (9606)
+#' @param stringdb_thr threshold to be applied to the score on the edges of the PPI. Default threshold value 900
 #'
 #' @return a list
 #' \describe{
@@ -54,6 +57,11 @@ load_gtf <- function(
 #' }
 #'
 #' @examples
+#' library(STRINGdb)
+#' library(igraph)
+#' stringdb_tax = 9606
+#' stringdb_thr = 900
+#' ppi_network <- LErNet::get_stringdb( stringdb_tax = stringdb_tax, stringdb_thr = stringdb_thr)
 #'
 #' @export
 
@@ -92,6 +100,7 @@ get_stringdb <- function(
 #' @paramt mart a biomaRt object for the given species
 #'
 #' @return a data.frame representing the mapping
+#'
 #'
 #' @export
 enps_to_entrez <-function(

@@ -1,6 +1,9 @@
 
 #' Retriving the aliases of lncrnas from Arena-idb
 #'
+#' @examples
+#' ncrnas_aliases <- get_arenaidb_ncrnas_aliases()
+#'
 #' @export
 
 get_arenaidb_ncrnas_aliases <- function(){
@@ -30,6 +33,9 @@ get_arenaidb_ncrnas_aliases <- function(){
 
 #' Retriving the aliases of proteins from Arena-idb
 #'
+#' @examples
+#' protein_aliases <- get_arenaidb_protein_aliases()
+#'
 #' @export
 
 get_arenaidb_protein_aliases <- function(){
@@ -58,6 +64,9 @@ get_arenaidb_protein_aliases <- function(){
 }
 
 #' Retriving the alias of genes from Arena-idb
+#'
+#' @examples
+#' gene_aliases <- get_arenaidb_gene_aliases()
 #'
 #' @export
 
@@ -90,6 +99,9 @@ get_arenaidb_gene_aliases <- function(){
 #'
 #' @return arenaidb a data.frame containing in the first two columns the informations about the lncrnas and in the following those about the interactions
 #'
+#' @examples
+#' interactions <- get_arenaidb_interactions()
+#'
 #' @export
 
 get_arenaidb_interactions <- function(){
@@ -106,6 +118,9 @@ get_arenaidb_interactions <- function(){
 #'
 #' @return arenaidb a data.frame where for each lncrna is specified the diseases in which it can be involved
 #'
+#' @examples
+#' diseases <- get_arenaidb_diseases()
+#'
 #' @export
 
 get_arenaidb_diseases <- function(){
@@ -117,6 +132,9 @@ get_arenaidb_diseases <- function(){
 #' Retriving the lncrna's section of Arena-idb
 #'
 #' @return arenaidb a data.frame where for each ncrna are specified all the informations
+#'
+#' @examples
+#' ncrnas <- get_arenaidb_ncrnas()
 #'
 #' @export
 
@@ -135,6 +153,8 @@ get_arenaidb_ncrnas <- function(){
 #'
 #'
 #' @return return_value a list of three data.frame: alias_mapping, gene_icontext and protein_icontext
+#'
+#' @examples
 #'
 #' @export
 

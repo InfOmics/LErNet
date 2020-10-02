@@ -26,3 +26,6 @@ return_value a list of three data.frame: alias_mapping, gene_icontext and protei
 \description{
 Retriving the informations about the aliases and the interactions of lncrna filtering by genes and proteins
 }
+\examples{
+
+}

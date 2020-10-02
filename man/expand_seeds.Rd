@@ -25,6 +25,3 @@ that are the produtcs of the genes in the genomic context and in the interaction
 by the expansion algorithm.
 Connectors are neighbors of selected proteins in the input PPI network.
 }
-\examples{
-components <- LErNet::expand_seeds(seeds,  ppi_network,  de_proteins)
-}

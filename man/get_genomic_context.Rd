@@ -7,7 +7,7 @@
 get_genomic_context(positions, lncgenes, pcgenes = NULL, max_window = 1e+05)
 }
 \arguments{
-\item{positions}{a data.frame reporting genomic positions. Columns are \code{id type seqname start end}. It may contain features into listed in \code{lncgenes} and \code{pcgenes}}
+\item{positions}{a data.frame reporting genomic positions by \code{\link[LErNet]{load_gtf}}. Columns are \code{id type seqname start end}. It may contain features into listed in \code{lncgenes} and \code{pcgenes}}
 
 \item{lncgenes}{a list of lncRNA genes}
 
@@ -22,11 +22,4 @@ a two column data.frame reporting neighborhood information. The first column giv
 Retrieves the genomic context of input lncRNAs.
 The genomic context is defined as the set of protin coding genes
 that resides within a given range.
-}
-\examples{
-genomic_context <- LErNet::get_genomic_context(
-positions = complete_positions,
-lncgenes = de_lncrnas$ensembl_gene_id,
-pcgenes = de_pcgenes,
-max_window = 100000)
 }
