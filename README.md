@@ -1,4 +1,4 @@
-# LErNet
+# LErNet 1.0
 *LErNet*: characterization of lncRNAs via context-aware network expansion and enrichment analysis
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [](#lang-en)
@@ -41,7 +41,12 @@ install.packages("rmarkdown")
 Then, you can install the *LErNet* package.
 
 ```R
-install_github("InfOmics/LErNet/tree/lernet.1.0")
+install_github("InfOmics/LErNet")
+```
+or 
+
+```R
+install_github("InfOmics/LErNet", ref="lernet.1.0")
 ```
 <hr />
 
