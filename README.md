@@ -6,8 +6,8 @@
 <hr />
 
 # WARNING!!!
-# NEW VERSION WILL COME SOON
-[visit the new version repository](https://github.com/InfOmics/LErNet/tree/lernet.1.0)
+# THIS IS THE NEW VERSION RELEASED ON 28th OCTOBER 2020 
+[the old verion can be found here](https://github.com/InfOmics/LErNet/tree/lernet.0.1)
 
 <hr />
 
