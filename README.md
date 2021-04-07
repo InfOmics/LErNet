@@ -47,11 +47,13 @@ install.packages("rmarkdown")
 Then, you can install the *LErNet* package.
 
 ```R
+library(devtools)
 install_github("InfOmics/LErNet")
 ```
 or 
 
 ```R
+library(devtools)
 install_github("InfOmics/LErNet", ref="lernet.1.0")
 ```
 <hr />
