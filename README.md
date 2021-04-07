@@ -177,7 +177,7 @@ It can be useful to show some basic statistics on the generated seeds:
 length(unique(genomic_context$partner_coding_gene))
 
 # Mean number of genomic seeds for each lncRNA
-mean(table(genomic_context$partner_coding_gene))
+mean(table(genomic_context$lnc_known))
 
 ```
 The following lines of codes are necessary to match the seeds
