@@ -1,7 +1,13 @@
-# LErNet
+# LErNet 1.0
 *LErNet*: characterization of lncRNAs via context-aware network expansion and enrichment analysis
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [](#lang-en)
+
+<hr />
+
+# WARNING!!!
+# THIS IS THE NEW VERSION RELEASED ON 28th OCTOBER 2020 
+[the old verion can be found here](https://github.com/InfOmics/LErNet/tree/lernet.0.1)
 
 <hr />
 
@@ -27,21 +33,21 @@ Before to install the *LErNet* package make sure that all the required packages 
 ```R
 # if you have not installed "devtools" package
 install.packages("BiocManager")
-BiocManager::install("GenomicRanges")
-BiocManager::install("GenomicFeatures")
-BiocManager::install("STRINGdb")
-BiocManager::install("biomaRt")
-BiocManager::install("ReactomePA")
-install.packages("visNetwork")
-install.packages("igraph")
-install.packages("R.utils")
-install.packages("rmarkdown")
+BiocManager::install("GenomicRanges", "GenomicFeatures", "STRINGdb","biomaRt", "ReactomePA", )
+install.packages("visNetwork", "igraph", "R.utils", "rmarkdown")
 ```
 
 Then, you can install the *LErNet* package.
 
 ```R
-install_github("InfOmics/LErNet/tree/lernet.1.0")
+library(devtools)
+install_github("InfOmics/LErNet")
+```
+or 
+
+```R
+library(devtools)
+install_github("InfOmics/LErNet", ref="lernet.1.0")
 ```
 <hr />
 
@@ -64,13 +70,11 @@ pcrna_file <- system.file("extdata", "41598_2018_30359_MOESM3_ESM.csv", package 
 gtf_file <- system.file("extdata", "gencode.vM20.chr_patch_hapl_scaff.annotation.gtf.gz", package = "LErNet")
 
 pcgenes<-(read.csv(pcrna_file, stringsAsFactors=FALSE))$gene_id
-
 length(pcgenes)
 
 lncrnaInfo<-read.csv(lncrna_file, stringsAsFactors=FALSE)
 lncrnaInfo<-lncrnaInfo[lncrnaInfo$significant != 'FALSE',  ]
 lncrnaAll<-as.character(lncrnaInfo$gene_id)
-
 nrow(lncrnaInfo)
 length(lncrnaAll)
 
@@ -96,14 +100,11 @@ starts <- sapply(strsplit(sapply(strsplit(novel$locus, "-"), `[`, 1), ":"), `[`,
 ends <- sapply(strsplit(novel$locus, "-"), `[`, 2)
 novel_gtf <- data.frame( "id" = novel$gene_id, "type" = rep('novel lncRNA', times = nrow(novel)),
                          "seqname" = chrs, "start" = starts, "end" = ends )
-
-
 nrow(novel_gtf)
 
 # Add information of novel lncRNAs into the dataframe containing information about known genes/lncRNAs
 complete_positions <- rbind(complete_positions, novel_gtf)
 rownames(complete_positions) <- seq(1:nrow(complete_positions))
-
 nrow(complete_positions)
 ```
 
@@ -136,9 +137,6 @@ ppi_network <- LErNet::get_stringdb( stringdb_tax = stringdb_tax, stringdb_thr =
 annot<-getBM(attributes = c("ensembl_gene_id", "ensembl_gene_id_version", "ensembl_transcript_id", "ensembl_peptide_id",
                             "hgnc_symbol", 'transcript_biotype', 'transcript_length', 'entrezgene_id', "mgi_symbol"),  mart = mart)
 
-# write.csv(annot, system.file("extdata", "mouse_mart_export.csv", package = "LErNet"), row.names = FALSE)
-# annot <- read.csv(system.file("extdata", "mouse_mart_export.csv", package = "LErNet"), sep=',', stringsAsFactors = FALSE)
-
 ensp_to_ensg <- subset(annot, ensembl_peptide_id %in% unique(union(ppi_network$protein1, ppi_network$protein2)) )[, c('ensembl_peptide_id','ensembl_gene_id')]
 
 print(nrow(ppi_network))
@@ -154,7 +152,6 @@ genomic_context <- LErNet::get_genomic_context(
   lncgenes = lncrnaAll,
   pcgenes = pcgenes,
   max_window = 100000)
-  
 nrow(genomic_context)
 ```
 It can be useful to show some basic statistics on the generated seeds:
@@ -164,18 +161,16 @@ It can be useful to show some basic statistics on the generated seeds:
 length(unique(genomic_context$partner_coding_gene))
 
 # Mean number of genomic seeds for each lncRNA
-mean(table(genomic_context$partner_coding_gene))
+mean(table(genomic_context$lnc_known))
 
 ```
 The following lines of codes are necessary to match the seeds
 
 ```R
-length(unique(genomic_context$partner_coding_gene))
 
 genomic_seeds <- unique((merge(genomic_context, ensp_to_ensg, by.x='partner_coding_gene', by.y='ensembl_gene_id'))$ensembl_peptide_id)
 length(genomic_seeds)
 
-length(pcgenes)
 de_proteins <- merge(annot[annot$ensembl_peptide_id != '', ], data.frame('ensembl_gene_id' = unique(pcgenes)))$ensembl_peptide_id
 length(de_proteins)
 ```
@@ -184,17 +179,16 @@ The next step is the core phase of *LErNEet*, i.e. the expansion phase with the 
 The function `expand_seeds` returns a list containing a dataframe with the network components.
 
 ```R
-components <- LErNet::expand_seeds(genomic_seeds,  ppi_network,  de_proteins=NULL)
+components <- LErNet::expand_seeds(genomic_seeds,  ppi_network,  de_proteins)
 
 length(unlist(components))
-length(components[[1]])
-components[[1]]
 ```
 
 This step is necessary to retrive the list of the protein mates which interact with lncRNAs of interest.
 
 ```R
 lncrna_context <- unique( (merge(genomic_context, annot[annot$ensembl_peptide_id != '',], by.x='partner_coding_gene', by.y='ensembl_gene_id'))[ , c('lnc_known','ensembl_peptide_id')])
+lncrna_context <- lncrna_context[ lncrna_context$mate %in% genomic_seeds,]
 
 colnames(lncrna_context) <- c('lncrna','mate')
 
@@ -225,7 +219,7 @@ LErNet::visualize(
   labels)
 ```
 
-![This is the image returned by the function. In the left upper box it is possible to select only a group to be viewed in the plot (lncRNA, Seed Connector and Seed Protein).](https://i.imgur.com/lS6Gzxo.png)
+![This is the image returned by the function. In the left upper box it is possible to select only a group to be viewed in the plot (lncRNA, Seed Connector and Seed Protein).](https://imgur.com/a/8HfMpvS)
 
 The last step is the functional enrichment of the results. Basically *LErNet* exploits the package ReactomePA to retrieve significant pathways through the function `enrich`: 
 
@@ -248,7 +242,7 @@ enrichment <- LErNet::enrich(entrez_ids, 'mouse')
 barplot(enrichment)
 ```
 
-![These are the most significant pathways retrieved by LErNet for the example with mouse genes.](https://i.imgur.com/ivBV1S1.png)
+![These are the most significant pathways retrieved by LErNet for the example with mouse genes.](https://imgur.com/a/jiDKnfi)
 
 However, the user can use the preferred tool to make functional enrichment.
 

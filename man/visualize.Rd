@@ -23,6 +23,8 @@ visualize(
 \item{expanded_elements}{the list of proteins (see also \code{\link[LErNet]{expand_seeds}} ) that must be visualized}
 
 \item{bg_ppi_network}{a two column data.frame representing PPI network edges (see also \code{\link[LErNet]{get_stringdb}} )}
+
+\item{labels}{a two column data.frame representing all the labels}
 }
 \value{
 visualizes the network in the Viewer window
@@ -32,7 +34,4 @@ Visualizes the expanded network,
 composed by seed proteins and connectors.
 LncRNA are added together with extra edges in order to report the lncrna context.
 LncRNAs are linked to the proteins that are products of their lncrna context.
-}
-\examples{
-
 }

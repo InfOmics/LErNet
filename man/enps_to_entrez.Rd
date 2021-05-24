@@ -8,6 +8,8 @@ enps_to_entrez(ens_proteins, mart)
 }
 \arguments{
 \item{ens_proteins}{list of Ensembl IDs}
+
+\item{mart}{a biomaRt object for the given species}
 }
 \value{
 a data.frame representing the mapping

@@ -26,13 +26,3 @@ STRINGdb often only associates a primary product to a gene,
 thus other products are not reported.
 The function also returns the proteins associated to each gene within the STRING database.
 }
-\examples{
-library(biomaRt)
-stringdb_tax = 9606
-stringdb_thr = 900
-mart = useMart(biomart = "ensembl", dataset = "hsapiens_gene_ensembl")
-ret <- LErNet::get_stringdb_bc_011( stringdb_tax = stringdb_tax, stringdb_thr = stringdb_thr, mart = mart)
-ppi_network <- ret[["ppi_network"]]
-ensp_to_ensg <- ret[["ensp_to_ensg"]]
-
-}

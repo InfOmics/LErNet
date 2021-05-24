@@ -17,7 +17,6 @@
 #'
 #' @return a two column data.frame reporting neighborhood information. The first column gives lncRNAs and the second column gives their associated neighbors.
 #'
-#' @examples
 #' @export
 get_genomic_context <- function(
   positions,
@@ -131,7 +130,6 @@ get_connected_components <- function(
 #'   \item{out_components}{a list of connected components of the resultant expanded network. Each compoent is a list of proteins.}
 #' }
 #'
-#' @examples
 #' @export
 
 expand_seeds<- function(
@@ -320,10 +318,9 @@ expand_seeds<- function(
 #' @param network_seeds the list of seed proteins
 #' @param expanded_elements the list of proteins (see also \code{\link[LErNet]{expand_seeds}} ) that must be visualized
 #' @param bg_ppi_network a two column data.frame representing PPI network edges (see also \code{\link[LErNet]{get_stringdb}} )
-#'
+#' @param labels a two column data.frame representing all the labels
 #' @return visualizes the network in the Viewer window
 #'
-#' @examples
 #'
 #' @export
 visualize <- function(
@@ -400,7 +397,7 @@ visualize <- function(
   edges <- rbind(context_edges, ppi_edges)
 
 
-  library(visNetwork)
+  #library(visNetwork)
   visNetwork(nodes, edges, width = "100%", height="1000px")%>%
     #visIgraphLayout(layout = "layout_with_fr") %>%
     #visIgraphLayout(layout = "layout_in_circle") %>%
@@ -420,11 +417,10 @@ visualize <- function(
 #' Computes functional enrichment of a given set of proteins via the ReactomePA package.
 #'
 #' @param entrez_genes list of proteins, in Entrez format, for which to compute the enrichment
-#' @param oganism oganism name (see \code{\link[ReactomePA]{enrichPathway}})
+#' @param organism oganism name (see \code{\link[ReactomePA]{enrichPathway}})
 #'
 #' @return a ReactomePA result object.
 #'
-#' @examples
 #' @export
 
 enrich <-function(

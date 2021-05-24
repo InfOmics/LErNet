@@ -9,16 +9,13 @@ enrich_001(ens_proteins, organism, mart)
 \arguments{
 \item{ens_proteins}{list of proteins, in Ensembl format, for which to compute the enrichment}
 
-\item{mart}{a biomaRt object of the given species need for the conversion from  Ensembl to Entrez IDs}
+\item{organism}{oganism name (see \code{\link[ReactomePA]{enrichPathway}})}
 
-\item{oganism}{oganism name (see \code{\link[ReactomePA]{enrichPathway}})}
+\item{mart}{a biomaRt object of the given species need for the conversion from  Ensembl to Entrez IDs}
 }
 \value{
 a ReactomePA result object.
 }
 \description{
 Computes functional enrichment of a given set of proteins via the ReactomePA package.
-}
-\examples{
-
 }

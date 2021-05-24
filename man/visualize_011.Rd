@@ -44,6 +44,3 @@ composed by seed proteins and connectors.
 LncRNA are added together with extra edges in order to report the genomic context.
 LncRNAs are linked to the proteins that are products of their genomic context.
 }
-\examples{
-
-}

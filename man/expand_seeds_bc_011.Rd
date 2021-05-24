@@ -36,6 +36,3 @@ that are the producs fo the genes int he genomic context,
 by the expasion algorithm.
 Connectors are neighbors of selected proteins in the input PPI network.
 }
-\examples{
-
-}

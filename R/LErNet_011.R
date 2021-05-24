@@ -15,14 +15,6 @@
 #'   \item{\code{ensp_to_ensg}}{a two columns data.frame reporting for each protein the corresponding gene (Ensembl IDs)}
 #' }
 #'
-#' @examples
-#' library(biomaRt)
-#' stringdb_tax = 9606
-#' stringdb_thr = 900
-#' mart = useMart(biomart = "ensembl", dataset = "hsapiens_gene_ensembl")
-#' ret <- LErNet::get_stringdb_bc_011( stringdb_tax = stringdb_tax, stringdb_thr = stringdb_thr, mart = mart)
-#' ppi_network <- ret[["ppi_network"]]
-#' ensp_to_ensg <- ret[["ensp_to_ensg"]]
 #'
 #' @export
 get_stringdb_bc_011 <- function(
@@ -80,7 +72,6 @@ get_stringdb_bc_011 <- function(
 #'   \item{network_seeds}{list of seed proteins that have succefully been mapped to the PPI network.}
 #' }
 #'
-#' @examples
 #'
 #' @export
 expand_seeds_bc_011 <- function(
@@ -333,7 +324,6 @@ expand_seeds_bc_011 <- function(
 #'
 #' @return visualizes the network in the Viewer window
 #'
-#' @examples
 #'
 #' @export
 visualize_011 <-function(
@@ -485,12 +475,11 @@ visualize_011 <-function(
 #' Computes functional enrichment of a given set of proteins via the ReactomePA package.
 #'
 #' @param ens_proteins list of proteins, in Ensembl format, for which to compute the enrichment
-#' @param oganism oganism name (see \code{\link[ReactomePA]{enrichPathway}})
+#' @param organism oganism name (see \code{\link[ReactomePA]{enrichPathway}})
 #' @param mart a biomaRt object of the given species need for the conversion from  Ensembl to Entrez IDs
 #'
 #' @return a ReactomePA result object.
 #'
-#' @examples
 #'
 #' @export
 enrich_001 <-function(

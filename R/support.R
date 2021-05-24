@@ -97,7 +97,7 @@ get_stringdb <- function(
 #' Maps a list of protein IDs in the Ensmbl format to the Entrez naming system
 #'
 #' @param ens_proteins list of Ensembl IDs
-#' @paramt mart a biomaRt object for the given species
+#' @param mart a biomaRt object for the given species
 #'
 #' @return a data.frame representing the mapping
 #'
