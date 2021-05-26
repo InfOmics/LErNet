@@ -24,7 +24,7 @@ visualize(
 
 \item{bg_ppi_network}{a two column data.frame representing PPI network edges (see also \code{\link[LErNet]{get_stringdb}} )}
 
-\item{labels}{a two column data.frame representing all the labels}
+\item{labels}{a two column data.frame containig the labels}
 }
 \value{
 visualizes the network in the Viewer window

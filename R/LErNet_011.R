@@ -72,7 +72,6 @@ get_stringdb_bc_011 <- function(
 #'   \item{network_seeds}{list of seed proteins that have succefully been mapped to the PPI network.}
 #' }
 #'
-#'
 #' @export
 expand_seeds_bc_011 <- function(
   genomic_context,
@@ -323,7 +322,6 @@ expand_seeds_bc_011 <- function(
 #' @param mart_symbol_column column of the biomaRt ojbect fomr wich symbols are retrieved
 #'
 #' @return visualizes the network in the Viewer window
-#'
 #'
 #' @export
 visualize_011 <-function(

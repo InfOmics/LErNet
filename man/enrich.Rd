@@ -9,7 +9,7 @@ enrich(entrez_genes, organism)
 \arguments{
 \item{entrez_genes}{list of proteins, in Entrez format, for which to compute the enrichment}
 
-\item{organism}{oganism name (see \code{\link[ReactomePA]{enrichPathway}})}
+\item{organism}{organism name (see \code{\link[ReactomePA]{enrichPathway}})}
 }
 \value{
 a ReactomePA result object.
