@@ -64,7 +64,8 @@ interaction_context$gene_icontext <- y1[y1$biotype != "mirna_primary_transcript"
 interaction_context$protein_icontext <- y2[y2$biotype != "mirna_primary_transcript",]
 
 library(data.table)
-all <- fread("inst/extdata/convFile_ppi.csv.gz")
+ppi_file <- system.file("extdata", "convFile_ppi.csv.gz", package = "LErNet")
+all <- fread(ppi_file)
 subsettissue <- all[,1:156]
 ppi_tissue <- list()
 j <- 1
