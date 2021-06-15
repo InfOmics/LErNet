@@ -24,7 +24,7 @@ package.check <- lapply(
   }
 )
 
-packages = c("LErNet","igraph")
+packages = c("igraph")
 package.check <- lapply(
   packages,
   FUN = function(x) {
@@ -35,7 +35,11 @@ package.check <- lapply(
   }
 )
 
-
+if (!require("LErNet", character.only = TRUE)) {
+  library(devtools)
+  install_github("InfOmics/LErNet", ref="lernet.1.0")
+  library("LErNet")
+}
 
 
 #load("MART.RData")
