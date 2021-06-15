@@ -1,15 +1,42 @@
-library(LErNet)
-library(biomaRt)
-library(GenomicRanges)
-library(STRINGdb)
-library(igraph)
-library(Organism.dplyr)
-library(Homo.sapiens)
-library(TxDb.Hsapiens.UCSC.hg38.knownGene)
-library(org.Hs.eg.db)
-library(AnnotationHub)
-library(enrichplot)
-library(ReactomePA)
+#library(LErNet)
+#library(igraph)
+#
+#library(enrichplot)
+#library(STRINGdb)
+#library(ReactomePA)
+#library(biomaRt)
+#library(GenomicRanges)
+#library(Organism.dplyr)
+#library(Homo.sapiens)
+#library(TxDb.Hsapiens.UCSC.hg38.knownGene)
+#library(org.Hs.eg.db)
+#library(AnnotationHub)
+
+packages = c("enrichplot","STRINGdb","ReactomePA","biomaRt","GenomicRanges","Organism.dplyr","Homo.sapiens","TxDb.Hsapiens.UCSC.hg38.knownGene","org.Hs.eg.db","AnnotationHub")
+package.check <- lapply(
+  packages,
+  FUN = function(x) {
+    if (!require(x, character.only = TRUE)) {
+      #install.packages(x, dependencies = TRUE)
+      BiocManager::install(x)
+      library(x, character.only = TRUE)
+    }
+  }
+)
+
+packages = c("LErNet","igraph")
+package.check <- lapply(
+  packages,
+  FUN = function(x) {
+    if (!require(x, character.only = TRUE)) {
+      install.packages(x, dependencies = TRUE)
+      library(x, character.only = TRUE)
+    }
+  }
+)
+
+
+
 
 #load("MART.RData")
 table4 <- read.csv(
@@ -70,7 +97,10 @@ subsettissue <- all[,1:156]
 ppi_tissue <- list()
 j <- 1
 for(i in 11:ncol(subsettissue)){
-  ppi_tissue[[j]] <- subsettissue[subsettissue[,i]=='1',c(2,4)]
+  #ppi_tissue[[j]] <- subsettissue[subsettissue[, colnames(subsettissue)[i]]=='1',c(2,4)]
+  #ppi_tissue[[j]] <- subsettissue[subsettissue[, i]=='1',c(2,4)]
+  x <- colnames(subsettissue)[i]
+  ppi_tissue[[j]] <- subsettissue[subsettissue[[x]]=='1', c(2,4)]
   j <- j+1
 }
 names(ppi_tissue) <- colnames(subsettissue)[11:156]
@@ -98,17 +128,17 @@ for(w in length(ppi_tissue)){
   ###########################
   colnames(ppi_network) <- c("protein1", "protein2")
   ensp_to_ensg <- subset(annot, ensembl_peptide_id %in% unique(union(ppi_network$protein1, ppi_network$protein2)) )[, c('ensembl_peptide_id','ensembl_gene_id')]
-
+  
   seeds <- list() #ENSP format
   # genomic seeds
   # interaction seeds - genes
   # interaction seeds - proteins
-
+  
   # genomic seeds
   genomic_seeds <- unique((merge(genomic_context, ensp_to_ensg, by.x='partner_coding_gene', by.y='ensembl_gene_id'))$ensembl_peptide_id)
   print("genomic seeds")
   print(length(genomic_seeds))
-
+  
   # interaction seeds - genes
   ipcgene_seeds <- unique(de_pcgene_icontext[, c('mate.name','mate.naming.resource')])
   nrow(ipcgene_seeds)
@@ -118,7 +148,7 @@ for(w in length(ppi_tissue)){
   ipcgene_seeds <- ensp_to_ensg[ ensp_to_ensg$ensembl_gene_id %in% ipcgene_seeds, ]$ensembl_peptide_id
   print("ipcgene_seeds")
   print(length(ipcgene_seeds))
-
+  
   # interaction seeds - proteins
   iprotein_seeds <- unique(de_protein_icontext[, c('mate.name','mate.naming.resource')])##33
   nrow(iprotein_seeds)
@@ -127,43 +157,43 @@ for(w in length(ppi_tissue)){
   nrow(all_iprotein_seeds)##33
   iprotein_seeds <- ensp_to_ensg[ ensp_to_ensg$ensembl_gene_id %in% all_iprotein_seeds$alias_name, ]$ensembl_peptide_id
   nrow(iprotein_seeds)##NULL -> BECAUSE THEY AREN'T IN ENSEMBL_GENE BUT IN REFSEQ,UNIGENE,UNIPROT,GENERIC AND SYMBOL.
-
+  
   #SYMBOL
   s <- unique(subset(all_iprotein_seeds,alias_space=="symbol")$alias_name)
   x <-  unique(mart_snapshot[ mart_snapshot$hgnc_symbol %in% s, ]$ensembl_peptide_id)
   x <- x[x != ""]
   length(x)##225
-
+  
   #UNIGENE
   conv_protein <- matrix(,nrow = 0, ncol = 2)
-
+  
   n <- unique(subset(all_iprotein_seeds,alias_space=="unigene")$alias_name)
   src <- src_organism("TxDb.Hsapiens.UCSC.hg38.knownGene")
   #mart <- useMart(biomart = "ensembl", dataset = "hsapiens_gene_ensembl")
-
+  
   #' select
   for(alias_name in n){
     b <- select(src, columns = c("ensembl"),
                 keytype = "unigene", keys = alias_name)
-
+    
     if(nrow(b)!= 0){
       conv_protein <- rbind(conv_protein,b)
       break
     }
   }
   colnames(conv_protein)<-c("alias_name","ensembl_gene_id")
-
+  
   #REFSEQ-UNIPROT-GENERIC
   fi <- c("external_gene_name","external_synonym", "refseq_mrna","uniprot_gn_id")
   names(fi) <- fi
   m <- unique(subset(all_iprotein_seeds,alias_space!="unigene" & alias_space!="symbol")$alias_name)
-
+  
   for(alias_name in m){
     print(alias_name)
     for(i in fi){
       b <- getBM(attributes = c("ensembl_gene_id"),
                  filters = i, values = alias_name, mart = mart)
-
+      
       if(nrow(b)!= 0){
         b <- cbind(alias_name,b)
         conv_protein <- rbind(conv_protein,b)
@@ -171,40 +201,40 @@ for(w in length(ppi_tissue)){
       }
     }
   }
-
+  
   conv_protein <- as.data.frame(unique(conv_protein))
   ens_prot <- unique(mart_snapshot[mart_snapshot$ensembl_gene_id %in% conv_protein$ensembl_gene_id,]$ensembl_peptide_id)
-
+  
   length(ens_prot)##201
-
-
+  
+  
   iprotein_seeds <- unique(c(ens_prot, x))##4251conSOLOTRANSCRIPTS
   print("iprotein_seeds")
   print(length(iprotein_seeds))
-
+  
   seeds <- unique(c(genomic_seeds, ipcgene_seeds, iprotein_seeds))
   print("unique seeds")
   print(length(seeds))
-
+  
   ## lncrna
   lncrna_context <- unique((merge(genomic_context, mart_snapshot, by.x='partner_coding_gene', by.y='ensembl_gene_id'))[,c('lnc_known', 'ensembl_peptide_id')])
   colnames(lncrna_context) <- c('lncrna','mate')
   length(unique(lncrna_context$lncrna))##
   nrow(lncrna_context)##
-
+  
   #de_pcgene_icontext
   ipcgene_seeds <- unique(de_pcgene_icontext[, c('mate.name','mate.naming.resource')])
   colnames(ipcgene_seeds) <- c('principal_name', 'principal_space')
   ipcgene_seeds <- (merge(ipcgene_seeds, de_pcgene_aliases))
   ipcgene_seeds <- merge(ipcgene_seeds, ensp_to_ensg, by.x='alias_name', by.y='ensembl_gene_id')
-
+  
   de_pcgene_context <- ipcgene_seeds[,c('principal_name', 'ensembl_peptide_id')]
   nrow(de_pcgene_context)##26
   colnames(de_pcgene_context) <- c('lncrna','mate')
   length(unique(de_pcgene_context$lncrna))##25
   lncrna_context <- rbind(lncrna_context, de_pcgene_context)##9806
   nrow(lncrna_context)##
-
+  
   # de protein icontext
   iprotein_seeds <- unique(de_protein_icontext[, c('mate.name','mate.naming.resource')])
   colnames(iprotein_seeds) <- c('principal_name', 'principal_space')
@@ -214,29 +244,29 @@ for(w in length(ppi_tissue)){
   colnames(y) <- c('lncrna','mate')
   length(unique(y$lncrna))##33
   lncrna_context <- unique(rbind(lncrna_context, y))##10024
-
-
+  
+  
   y2 <- unique((merge(conv_protein,mart_snapshot, by.x='ensembl_gene_id', by.y='ensembl_gene_id'))[,c('alias_name','ensembl_peptide_id')])
   y2 <- y2[y2$ensembl_peptide_id != "",]##200
   colnames(y2) <- c('lncrna','mate')
   length(unique(y2$lncrna))##29
   lncrna_context <- unique(rbind(lncrna_context, y2))##10224
-
-
+  
+  
   lncrna_context <- unique(lncrna_context[ lncrna_context$mate %in% seeds,])
   lncrna.context <- lncrna_context[lncrna_context$mate != "",]
   de.proteins <- de_proteins
   network_seeds <- seeds
   bg_ppi_network <- ppi_network
-
-
+  
+  
   labels <- data.frame( matrix( ncol=2, nrow=0, dimnames=list(NULL, c('id','label')) ) )
   x <- data.frame(
     'id' = unique(lncrna.context$lncrna),
     'label' = unique(lncrna.context$lncrna)
   )
   labels <- rbind(labels, x)
-
+  
   ## WITHOUT EXPANSION
   ppi <- ppi_network##324152
   if(!is.null(de_proteins)){
@@ -244,37 +274,37 @@ for(w in length(ppi_tissue)){
     ppi <- ppi[ ppi$protein2 %in% de_proteins, ]
   }
   nrow(ppi)##12981
-
+  
   seed_ppi <- ppi[ ppi$protein1 %in% seeds, ]
   seed_ppi <- seed_ppi[ seed_ppi$protein2 %in% seeds, ]
   nrow(seed_ppi)##1094
-
+  
   init_components <- get_connected_components(seed_ppi)##24
-
+  
   for(seed in setdiff( seeds, unlist(init_components) )){
     init_components <- append(init_components, list(seed) )
   }##455
-
+  
   print("init_components")
   print(length(init_components))
   com_distribution <- as.data.frame(summary(init_components))
   com_distribution <- as.numeric(com_distribution[1:length(init_components),3])
-
+  
   coDistribution <- as.data.frame(table(com_distribution))
   g <- as.numeric(coDistribution$Freq)
-
+  
   print(barplot(g,data=coDistribution, names.arg = coDistribution$com_distribution,
                 main="Histogram of the distribution of the components sizes", xlab = "Components sizes"))
-
+  
   print(coDistribution)
-
+  
   expanded_elements <- unlist(init_components)
-
+  
   x <- unique(mart_snapshot[ mart_snapshot$ensembl_peptide_id %in% unlist(init_components), c('ensembl_peptide_id','hgnc_symbol')])
   colnames(x) <- c('id','label')
   x <- x[x$id != "",]
   labels <- rbind(labels, x)
-
+  
   Vis <- LErNet::visualize(
     unique(lncrna.context),
     unique(de.proteins),
@@ -282,7 +312,7 @@ for(w in length(ppi_tissue)){
     unique(expanded_elements),
     unique(bg_ppi_network),
     labels)
-
+  
   edges <- (Vis[["x"]][["edges"]])
   print("edges")
   print(nrow(edges))
@@ -296,7 +326,7 @@ for(w in length(ppi_tissue)){
   nodes <- unique(c(nodes,node3))
   print("nodes with lncRNA")
   print(length(nodes))
-
+  
   components <- LErNet::expand_seeds(seeds,  ppi_network,  de_proteins)
   print("components")
   print(length(components))
@@ -305,11 +335,11 @@ for(w in length(ppi_tissue)){
   expanded_distribution <- expanded_distribution[1:length(components),3]
   exDistribution<- as.data.frame(table(expanded_distribution))
   l <- as.numeric(exDistribution$Freq)
-
+  
   print(barplot(l,data=exDistribution,names.arg = exDistribution$expanded_distribution,
                 main="Expanded network histogram of the distribution of the components sizes",xlab = "Components sizes"))
   print(exDistribution)
-
+  
   labels <- data.frame( matrix( ncol=2, nrow=0, dimnames=list(NULL, c('id','label')) ) )
   x <- data.frame(
     'id' = unique(lncrna.context$lncrna),
@@ -320,9 +350,9 @@ for(w in length(ppi_tissue)){
   colnames(x) <- c('id','label')
   x <- x[x$id != "",]
   labels <- rbind(labels, x)
-
+  
   expanded_elements <- unlist(components)
-
+  
   Vis <- LErNet::visualize(
     unique(lncrna.context),
     unique(de.proteins),
@@ -330,9 +360,9 @@ for(w in length(ppi_tissue)){
     unique(expanded_elements),
     unique(bg_ppi_network),
     labels)
-
+  
   #visSave(Vis, file=paste(names(ppi_tissue[w]),".html",collapse = " ",sep = ""))
-
+  
   edges <- (Vis[["x"]][["edges"]])
   print("edges")
   print(nrow(edges))
@@ -346,13 +376,13 @@ for(w in length(ppi_tissue)){
   nodes <- unique(c(nodes,node3))
   print("nodes with lncRNA")
   print(length(nodes))
-
+  
   node <- (Vis[["x"]][["nodes"]])
   node1 <- (node[node$group=="Connector","name"])
   node2 <- (node[node$group=="Seed","name"])
   nodes <- length(unique(c(node1,node2)))
-
-
+  
+  
   for(comp in components){
     entrez_ids <- unique((merge( data.frame('ensembl_peptide_id' = comp), mart_snapshot ))$entrezgene_id)
     enrichment <- LErNet::enrich(entrez_ids, 'human')
@@ -372,7 +402,7 @@ for(w in length(ppi_tissue)){
       }
     }
   }
-
+  
   rm(list = c("ppi_network","ensp_to_ensg", "seeds", "genomic_seeds","ipcgene_seeds", "iprotein_seeds", "all_iprotein_seeds", "x", "init_components","components", "comp", "entrez_ids", "enrichment", "lncrna_context", "de_pcgene_context", "y1", "y2", "y", "bg_ppi_network", "expanded_elements", "labels", "Vis", "network_seeds")
   )
 }
